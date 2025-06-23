@@ -20,22 +20,22 @@ class DashboardController extends Controller
         $peminjamanHariIni = Peminjaman::whereDate('tanggal_pinjam', Carbon::today())->count();
         $pengembalianHariIni = Peminjaman::whereDate('tanggal_kembali_aktual', Carbon::today())->count();
         $terlambat = Peminjaman::where('status', 'terlambat')
-                               ->orWhere(function($query) {
-                                   $query->where('status', 'dipinjam')
-                                         ->where('tanggal_kembali_rencana', '<', Carbon::today());
-                               })->count();
+                            ->orWhere(function($query) {
+                                $query->where('status', 'dipinjam')
+                                        ->where('tanggal_kembali_rencana', '<', Carbon::today());
+                            })->count();
         
         $totalDenda = Denda::where('status_bayar', 'belum-dibayar')->sum('total_denda');
         
         $peminjamanTerbaru = Peminjaman::with(['anggota', 'buku'])
-                                      ->orderBy('created_at', 'desc')
-                                      ->limit(5)
-                                      ->get();
+                                    ->orderBy('created_at', 'desc')
+                                    ->limit(5)
+                                    ->get();
         
         $bukuTerpopuler = Buku::withCount('peminjamans')
-                             ->orderBy('peminjamans_count', 'desc')
-                             ->limit(5)
-                             ->get();
+                            ->orderBy('peminjamans_count', 'desc')
+                            ->limit(5)
+                            ->get();
 
         return view('dashboard.index', compact(
             'totalAnggota', 'totalBuku', 'bukuTersedia', 'bukuDipinjam',

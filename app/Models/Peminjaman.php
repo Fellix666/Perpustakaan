@@ -10,6 +10,9 @@ class Peminjaman extends Model
 {
     use HasFactory;
 
+    // Tambahkan properti ini untuk menentukan nama tabel secara eksplisit
+    protected $table = 'peminjamans';
+
     protected $fillable = [
         'kode_peminjaman',
         'anggota_id',
@@ -48,7 +51,7 @@ class Peminjaman extends Model
         if ($this->status == 'dikembalikan' && $this->tanggal_kembali_aktual) {
             $hariTerlambat = $this->tanggal_kembali_aktual->diffInDays($this->tanggal_kembali_rencana, false);
             if ($hariTerlambat > 0) {
-                return $hariTerlambat * 1000; // Rp 1000 per hari
+                return $hariTerlambat * 1000;
             }
         } elseif ($this->status == 'dipinjam' || $this->status == 'terlambat') {
             $hariTerlambat = Carbon::now()->diffInDays($this->tanggal_kembali_rencana, false);

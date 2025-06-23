@@ -88,7 +88,7 @@ class PeminjamanController extends Controller
 
         // Hitung denda jika terlambat
         $hariTerlambat = Carbon::parse($request->tanggal_kembali_aktual)
-                               ->diffInDays($peminjaman->tanggal_kembali_rencana, false);
+                            ->diffInDays($peminjaman->tanggal_kembali_rencana, false);
         
         if ($hariTerlambat > 0) {
             $totalDenda = $hariTerlambat * 1000;
