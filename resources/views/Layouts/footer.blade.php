@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Footer Diskominfo Kubu Raya</title>
+    <title>Perpustakaan</title>
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -81,19 +81,19 @@
     <footer>
         <div class="footer-content">
             <div class="footer-copyright">
-                &copy; 2024 Sistem Informasi Magang. All Rights Reserved.
+                &copy; 2024 Aplikasi Perpustakaan SMP Negeri 1 Sanggau Ledo. All Rights Reserved.
             </div>
             <div class="footer-icons">
-                <a href="https://www.instagram.com/diskominfokuburaya" target="_blank" aria-label="Instagram">
+                <a href="" target="_blank" aria-label="Instagram">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <a href="https://kominfo.kuburaya.go.id/" target="_blank" aria-label="Website">
+                <a href="" target="_blank" aria-label="Website">
                     <i class="fas fa-globe"></i>
                 </a>
-                <a href="mailto:diskominfo@kuburayakab.go.id" aria-label="Email">
+                <a href="" aria-label="Email">
                     <i class="fas fa-envelope"></i>
                 </a>
-                <a href="https://maps.app.goo.gl/5A613qYP1bMfx2Kz5" target="_blank" aria-label="Location">
+                <a href="" target="_blank" aria-label="Location">
                     <i class="fas fa-map-marker-alt"></i>
                 </a>
             </div>

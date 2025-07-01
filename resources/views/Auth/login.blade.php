@@ -8,8 +8,8 @@
         <div class="login-card">
             <div class="login-header">
                 <i class="fas fa-book-open fa-3x mb-3"></i>
-                <h3>(Nama Aplikasi)</h3>
-                <p class="mb-0">Nama Aplikasi</p>
+                <h3>Perpustakaan</h3>
+                <p class="mb-0">Perpustakaan</p>
                 <small class="text-white-50">Silakan login untuk melanjutkan</small>
             </div>
             
@@ -33,13 +33,13 @@
                             <i class="fas fa-envelope me-2"></i>Email
                         </label>
                         <input type="email" 
-                               class="form-control @error('email') is-invalid @enderror" 
-                               id="email" 
-                               name="email" 
-                               value="{{ old('email') }}" 
-                               required 
-                               autofocus
-                               placeholder="Masukkan email Anda">
+                            class="form-control @error('email') is-invalid @enderror" 
+                            id="email" 
+                            name="email" 
+                            value="{{ old('email') }}" 
+                            required 
+                            autofocus
+                            placeholder="Masukkan email Anda">
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

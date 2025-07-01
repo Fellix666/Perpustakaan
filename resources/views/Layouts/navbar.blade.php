@@ -5,7 +5,7 @@
         </button>
         <a class="navbar-brand mx-auto d-flex align-items-center" href="{{ route('dashboard') }}">
             <i class="fas fa-book-open me-2"></i>
-            <span class="fw-bold">Nama Aplikasi</span>
+            <span class="fw-bold">Perpustakaan</span>
         </a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
