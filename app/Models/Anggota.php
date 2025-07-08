@@ -17,7 +17,8 @@ class Anggota extends Model
         'alamat',
         'telepon',
         'tanggal_daftar',
-        'status'
+        'status',
+        'foto',
     ];
 
     protected $casts = [

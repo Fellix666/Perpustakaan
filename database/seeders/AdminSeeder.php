@@ -17,6 +17,13 @@ class AdminSeeder extends Seeder
             'name' => 'Administrator',
             'email' => 'admin@perpustakaan.com',
             'password' => Hash::make('password123'),
+            'role' => 'admin',
+        ]);
+        Admin::create([
+            'name' => 'Kepala Perpustakaan',
+            'email' => 'kepala@perpustakaan.com',
+            'password' => Hash::make('password123'),
+            'role' => 'kepala_perpus',
         ]);
     }
 }

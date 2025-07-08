@@ -22,7 +22,8 @@ class Buku extends Model
         'stok_tersedia',
         'kategori_id',
         'rak_id',
-        'status'
+        'status',
+        'cover'
     ];
 
     public function kategori()

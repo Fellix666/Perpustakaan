@@ -150,6 +150,15 @@
                         </div>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Foto Anggota (opsional)</label>
+                        <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" name="foto" accept="image/*">
+                        @error('foto')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div id="previewFoto" class="mt-2"></div>
+                    </div>
+
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Informasi:</strong> Status anggota akan otomatis diset sebagai "Aktif" setelah pendaftaran berhasil.
@@ -267,6 +276,18 @@ window.addEventListener('beforeunload', function(e) {
     if (formChanged) {
         e.preventDefault();
         e.returnValue = '';
+    }
+});
+
+document.getElementById('foto').addEventListener('change', function(e) {
+    const preview = document.getElementById('previewFoto');
+    preview.innerHTML = '';
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview Foto" class="img-thumbnail" style="max-width:100px;">`;
+        };
+        reader.readAsDataURL(this.files[0]);
     }
 });
 </script>

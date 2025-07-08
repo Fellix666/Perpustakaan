@@ -49,12 +49,17 @@
                         <label for="password" class="form-label">
                             <i class="fas fa-lock me-2"></i>Password
                         </label>
-                        <input type="password" 
-                               class="form-control @error('password') is-invalid @enderror" 
-                               id="password" 
-                               name="password" 
-                               required
-                               placeholder="Masukkan password Anda">
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control @error('password') is-invalid @enderror" 
+                                   id="password" 
+                                   name="password" 
+                                   required
+                                   placeholder="Masukkan password Anda">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword" tabindex="-1">
+                                <i class="fas fa-eye" id="iconPassword"></i>
+                            </button>
+                        </div>
                         @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -83,4 +88,22 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = document.getElementById('iconPassword');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+});
+</script>
 @endsection

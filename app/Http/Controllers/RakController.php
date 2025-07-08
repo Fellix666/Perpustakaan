@@ -15,11 +15,17 @@ class RakController extends Controller
 
     public function create()
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('rak.create');
     }
 
     public function store(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'kode_rak' => 'required|unique:raks,kode_rak|max:10',
             'nama_rak' => 'required|max:100',
@@ -40,11 +46,17 @@ class RakController extends Controller
 
     public function edit(Rak $rak)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('rak.edit', compact('rak'));
     }
 
     public function update(Request $request, Rak $rak)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'kode_rak' => 'required|unique:raks,kode_rak,' . $rak->id . '|max:10',
             'nama_rak' => 'required|max:100',
@@ -59,6 +71,9 @@ class RakController extends Controller
 
     public function destroy(Rak $rak)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         if ($rak->bukus()->count() > 0) {
             return redirect()->route('rak.index')->with('error', 'Rak tidak dapat dihapus karena masih memiliki buku');
         }

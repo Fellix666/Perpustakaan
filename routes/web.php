@@ -40,11 +40,36 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('anggota/generate/nomor', [AnggotaController::class, 'generateNomorAnggota'])->name('anggota.generate-nomor');
     Route::get('anggota/search/ajax', [AnggotaController::class, 'search'])->name('anggota.search');
     Route::get('anggota/export/csv', [AnggotaController::class, 'export'])->name('anggota.export');
+    Route::post('anggota/import', [AnggotaController::class, 'import'])->name('anggota.import');
+    
+    // Routes untuk Buku (satu per satu)
+    Route::get('buku', [BukuController::class, 'index'])->name('buku.index');
+    Route::get('buku/create', [BukuController::class, 'create'])->name('buku.create');
+    Route::post('buku', [BukuController::class, 'store'])->name('buku.store');
+    Route::get('buku/{buku}', [BukuController::class, 'show'])->name('buku.show');
+    Route::get('buku/{buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
+    Route::put('buku/{buku}', [BukuController::class, 'update'])->name('buku.update');
+    Route::delete('buku/{buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
+    Route::get('buku/export/csv', [BukuController::class, 'export'])->name('buku.export');
+    Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
+    
+    // Routes untuk Kategori (satu per satu)
+    Route::get('kategori', [KategoriController::class, 'index'])->name('kategori.index');
+    Route::get('kategori/create', [KategoriController::class, 'create'])->name('kategori.create');
+    Route::post('kategori', [KategoriController::class, 'store'])->name('kategori.store');
+    Route::get('kategori/{kategori}/edit', [KategoriController::class, 'edit'])->name('kategori.edit');
+    Route::put('kategori/{kategori}', [KategoriController::class, 'update'])->name('kategori.update');
+    Route::delete('kategori/{kategori}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
+
+    // Routes untuk Rak (satu per satu)
+    Route::get('rak', [RakController::class, 'index'])->name('rak.index');
+    Route::get('rak/create', [RakController::class, 'create'])->name('rak.create');
+    Route::post('rak', [RakController::class, 'store'])->name('rak.store');
+    Route::get('rak/{rak}/edit', [RakController::class, 'edit'])->name('rak.edit');
+    Route::put('rak/{rak}', [RakController::class, 'update'])->name('rak.update');
+    Route::delete('rak/{rak}', [RakController::class, 'destroy'])->name('rak.destroy');
     
     // Routes lainnya
-    Route::resource('buku', BukuController::class);
-    Route::resource('kategori', KategoriController::class);
-    Route::resource('rak', RakController::class);
     Route::resource('peminjaman', PeminjamanController::class);
     
     Route::get('peminjaman/{id}/pengembalian', [PeminjamanController::class, 'pengembalian'])->name('peminjaman.pengembalian');
@@ -68,4 +93,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('laporan/print/semua', [LaporanController::class, 'printSemua'])->name('laporan.print.semua');
     Route::get('laporan/peminjaman', [DashboardController::class, 'laporanPeminjaman'])->name('laporan.peminjaman');
     Route::get('laporan/denda', [DashboardController::class, 'laporanDenda'])->name('laporan.denda');
+
+    // Tambahkan route profil admin
+    Route::get('profile', [AuthController::class, 'profile'])->name('profile');
+    Route::put('profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 });

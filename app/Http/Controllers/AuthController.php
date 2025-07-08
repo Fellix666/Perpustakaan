@@ -82,4 +82,46 @@ class AuthController extends Controller
 
         return redirect('/dashboard');
     }
+
+    /**
+     * Tampilkan form profil admin
+     */
+    public function profile()
+    {
+        return view('layouts.profile');
+    }
+
+    /**
+     * Update data profil admin
+     */
+    public function updateProfile(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        if (!$admin instanceof \App\Models\Admin) {
+            $admin = \App\Models\Admin::find($admin->id);
+        }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:admins,email,' . $admin->id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        $admin->name = $request->name;
+        $admin->email = $request->email;
+        $passwordChanged = false;
+        if ($request->filled('password')) {
+            $admin->password = Hash::make($request->password);
+            $passwordChanged = true;
+        }
+        $admin->save();
+
+        if ($passwordChanged) {
+            Auth::guard('admin')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->with('success', 'Password berhasil diubah. Silakan login kembali dengan password baru.');
+        }
+
+        return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
+    }
 }

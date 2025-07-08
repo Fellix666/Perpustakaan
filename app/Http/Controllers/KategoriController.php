@@ -15,11 +15,17 @@ class KategoriController extends Controller
 
     public function create()
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('kategori.create');
     }
 
     public function store(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'kode_kategori' => 'required|unique:kategoris,kode_kategori|max:10',
             'nama_kategori' => 'required|max:100',
@@ -39,11 +45,17 @@ class KategoriController extends Controller
 
     public function edit(Kategori $kategori)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('kategori.edit', compact('kategori'));
     }
 
     public function update(Request $request, Kategori $kategori)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'kode_kategori' => 'required|unique:kategoris,kode_kategori,' . $kategori->id . '|max:10',
             'nama_kategori' => 'required|max:100',
@@ -57,6 +69,9 @@ class KategoriController extends Controller
 
     public function destroy(Kategori $kategori)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         if ($kategori->bukus()->count() > 0) {
             return redirect()->route('kategori.index')->with('error', 'Kategori tidak dapat dihapus karena masih memiliki buku');
         }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('kategori_id')->constrained('kategoris')->onDelete('cascade');
             $table->foreignId('rak_id')->constrained('raks')->onDelete('cascade');
             $table->enum('status', ['tersedia', 'tidak-tersedia'])->default('tersedia');
+            $table->string('cover')->nullable();
             $table->timestamps();
         });
     }

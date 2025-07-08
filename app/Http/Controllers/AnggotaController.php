@@ -3,22 +3,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Anggota;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AnggotaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $anggotas = Anggota::orderBy('nama_lengkap')->paginate(10);
+        $query = Anggota::orderBy('nama_lengkap');
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('nama_lengkap', 'like', "%$q%")
+                    ->orWhere('nomor_anggota', 'like', "%$q%")
+                    ->orWhere('kelas', 'like', "%$q%");
+            });
+        }
+        $anggotas = $query->paginate(10)->withQueryString();
         return view('anggota.index', compact('anggotas'));
     }
 
     public function create()
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('anggota.create');
     }
 
     public function store(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'nomor_anggota' => 'required|unique:anggotas,nomor_anggota',
             'nama_lengkap' => 'required|max:100',
@@ -26,11 +42,18 @@ class AnggotaController extends Controller
             'kelas' => 'required|max:20',
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
-            'tanggal_daftar' => 'required|date'
+            'tanggal_daftar' => 'required|date',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->all();
         $data['status'] = 'aktif';
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = uniqid('anggota_').'.'.$file->getClientOriginalExtension();
+            $file->storeAs('public/anggota', $filename);
+            $data['foto'] = $filename;
+        }
         Anggota::create($data);
 
         return redirect()->route('anggota.index')->with('success', 'Anggota berhasil ditambahkan');
@@ -44,11 +67,17 @@ class AnggotaController extends Controller
 
     public function edit(Anggota $anggota)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         return view('anggota.edit', compact('anggota'));
     }
 
     public function update(Request $request, Anggota $anggota)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id,
             'nama_lengkap' => 'required|max:100',
@@ -57,15 +86,28 @@ class AnggotaController extends Controller
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
             'tanggal_daftar' => 'required|date',
-            'status' => 'required|in:aktif,non-aktif'
+            'status' => 'required|in:aktif,non-aktif',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $anggota->update($request->all());
+        $data = $request->all();
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = uniqid('anggota_').'.'.$file->getClientOriginalExtension();
+            $file->storeAs('public/anggota', $filename);
+            $data['foto'] = $filename;
+        } else {
+            unset($data['foto']);
+        }
+        $anggota->update($data);
         return redirect()->route('anggota.index')->with('success', 'Anggota berhasil diperbarui');
     }
 
     public function destroy(Anggota $anggota)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         if ($anggota->peminjamanAktif()->count() > 0) {
             return redirect()->route('anggota.index')->with('error', 'Tidak dapat menghapus anggota yang masih memiliki peminjaman aktif');
         }
@@ -117,31 +159,101 @@ class AnggotaController extends Controller
 
     public function export()
     {
+        // Export Excel saja (CSV dihapus)
         $anggotas = Anggota::orderBy('nama_lengkap')->get();
-        $filename = 'data_anggota_' . date('Y-m-d_H-i-s') . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\""
-        ];
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->fromArray([
+            ['nomor_anggota','nama_lengkap','jenis_kelamin','kelas','alamat','telepon','tanggal_daftar','status']
+        ], null, 'A1');
+        $rowNum = 2;
+        foreach ($anggotas as $anggota) {
+            $sheet->fromArray([
+                $anggota->nomor_anggota,
+                $anggota->nama_lengkap,
+                $anggota->jenis_kelamin,
+                $anggota->kelas,
+                $anggota->alamat,
+                $anggota->telepon,
+                $anggota->tanggal_daftar->format('Y-m-d'),
+                $anggota->status
+            ], null, 'A'.$rowNum);
+            $rowNum++;
+        }
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'data_anggota_'.date('Y-m-d_H-i-s').'.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        $writer->save('php://output');
+        exit;
+    }
 
-        return response()->stream(function() use ($anggotas) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['No. Anggota','Nama Lengkap','Jenis Kelamin','Kelas','Alamat','Telepon','Tanggal Daftar','Status']);
-            
-            foreach ($anggotas as $anggota) {
-                fputcsv($file, [
-                    $anggota->nomor_anggota,
-                    $anggota->nama_lengkap,
-                    $anggota->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan',
-                    $anggota->kelas,
-                    $anggota->alamat,
-                    $anggota->telepon,
-                    $anggota->tanggal_daftar->format('d/m/Y'),
-                    $anggota->status
-                ]);
+    public function import(Request $request)
+    {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx',
+        ]);
+        $file = $request->file('file');
+        $rows = [];
+        $errors = [];
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $header = [];
+            foreach ($sheet->getRowIterator() as $i => $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+                $cells = [];
+                foreach ($cellIterator as $cell) {
+                    $cells[] = $cell->getValue();
+                }
+                if ($i == 1) {
+                    $header = $cells;
+                } else {
+                    $rows[] = array_combine($header, $cells);
+                }
             }
-            fclose($file);
-        }, 200, $headers);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
+        }
+        $imported = 0;
+        foreach ($rows as $i => $row) {
+            if (empty($row['nomor_anggota']) || empty($row['nama_lengkap']) || empty($row['jenis_kelamin']) || empty($row['kelas']) || empty($row['alamat']) || empty($row['tanggal_daftar'])) {
+                $errors[] = "Baris ke-".($i+2).": Data wajib tidak lengkap.";
+                continue;
+            }
+            if (\App\Models\Anggota::where('nomor_anggota', $row['nomor_anggota'])->exists()) {
+                $errors[] = "Baris ke-".($i+2).": Nomor anggota sudah ada.";
+                continue;
+            }
+            try {
+                \App\Models\Anggota::create([
+                    'nomor_anggota' => $row['nomor_anggota'],
+                    'nama_lengkap' => $row['nama_lengkap'],
+                    'jenis_kelamin' => $row['jenis_kelamin'],
+                    'kelas' => $row['kelas'],
+                    'alamat' => $row['alamat'],
+                    'telepon' => $row['telepon'] ?? null,
+                    'tanggal_daftar' => $row['tanggal_daftar'],
+                    'status' => $row['status'] ?? 'aktif',
+                ]);
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris ke-".($i+2).": Gagal import (".$e->getMessage().")";
+            }
+        }
+        if ($imported > 0) {
+            $msg = "$imported data anggota berhasil diimport.";
+            if ($errors) {
+                $msg .= " Sebagian gagal: ".implode(' | ', $errors);
+                return back()->with('success', $msg);
+            }
+            return back()->with('success', $msg);
+        } else {
+            return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', $errors));
+        }
     }
 }

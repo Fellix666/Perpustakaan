@@ -336,10 +336,14 @@
                 </div>
                 
                 <div class="photo-section">
-                    <div class="photo-placeholder">
-                        <div class="photo-icon">👤</div>
-                        <div class="photo-text">Foto<br>3x4</div>
-                    </div>
+                    @if($anggota->foto)
+                        <img src="{{ asset('storage/anggota/'.$anggota->foto) }}" alt="Foto Anggota" style="width:60px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #ddd;">
+                    @else
+                        <div class="photo-placeholder">
+                            <div class="photo-icon">👤</div>
+                            <div class="photo-text">Foto<br>3x4</div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

@@ -14,6 +14,7 @@
     <a href="{{ route('anggota.card', $anggota) }}" class="btn btn-info" target="_blank">
         <i class="fas fa-print me-2"></i>Cetak Kartu
     </a>
+    @if(auth('admin')->user()->role === 'admin')
     <a href="{{ route('anggota.edit', $anggota) }}" class="btn btn-warning">
         <i class="fas fa-edit me-2"></i>Edit
     </a>
@@ -24,6 +25,7 @@
             <i class="fas fa-trash me-2"></i>Hapus
         </button>
     </form>
+    @endif
 </div>
 @endsection
 
@@ -36,9 +38,13 @@
             </div>
             <div class="card-body">
                 <div class="text-center mb-4">
-                    <div class="avatar-placeholder bg-light border rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
-                        <i class="fas fa-user fa-4x text-muted"></i>
-                    </div>
+                    @if($anggota->foto)
+                        <img src="{{ asset('storage/anggota/'.$anggota->foto) }}" alt="Foto Anggota" class="img-thumbnail rounded-circle" style="width:120px;height:120px;object-fit:cover;">
+                    @else
+                        <div class="avatar-placeholder bg-light border rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                            <i class="fas fa-user fa-4x text-muted"></i>
+                        </div>
+                    @endif
                 </div>
                 
                 <table class="table table-borderless">

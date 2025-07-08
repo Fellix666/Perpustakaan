@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('telepon', 15)->nullable();
             $table->date('tanggal_daftar');
             $table->enum('status', ['aktif', 'non-aktif'])->default('aktif');
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }
