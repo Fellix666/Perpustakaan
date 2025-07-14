@@ -9,7 +9,21 @@ class AnggotaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Anggota::orderBy('nomor_anggota');
+        $query = Anggota::query();
+
+        // Filter berdasarkan tahun daftar
+        if ($request->filled('tahun_daftar')) {
+            $query->whereYear('tanggal_daftar', $request->tahun_daftar);
+        }
+        // Filter berdasarkan kelas
+        if ($request->filled('kelas')) {
+            $query->where('kelas', $request->kelas);
+        }
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        // Pencarian umum (opsional, tetap dipertahankan)
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function($sub) use ($q) {
@@ -18,8 +32,11 @@ class AnggotaController extends Controller
                     ->orWhere('kelas', 'like', "%$q%");
             });
         }
-        $anggotas = $query->paginate(10)->withQueryString();
-        return view('anggota.index', compact('anggotas'));
+        $anggotas = $query->orderBy('nomor_anggota')->paginate(10)->withQueryString();
+        // Data untuk filter dropdown
+        $kelasList = Anggota::select('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
+        $tahunDaftarList = Anggota::selectRaw('YEAR(tanggal_daftar) as tahun')->distinct()->orderBy('tahun', 'desc')->pluck('tahun');
+        return view('anggota.index', compact('anggotas', 'kelasList', 'tahunDaftarList'));
     }
 
     public function create()

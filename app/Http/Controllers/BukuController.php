@@ -23,8 +23,28 @@ class BukuController extends Controller
                     ->orWhere('penerbit', 'like', "%$q%");
             });
         }
+        // Filter kategori
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+        // Filter rak
+        if ($request->filled('rak_id')) {
+            $query->where('rak_id', $request->rak_id);
+        }
+        // Filter status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        // Filter tahun terbit
+        if ($request->filled('tahun_terbit')) {
+            $query->where('tahun_terbit', $request->tahun_terbit);
+        }
         $bukus = $query->paginate(10)->withQueryString();
-        return view('buku.index', compact('bukus'));
+        // Data untuk filter dropdown
+        $kategoris = \App\Models\Kategori::orderBy('nama_kategori')->get();
+        $raks = \App\Models\Rak::orderBy('nama_rak')->get();
+        $tahunTerbitList = \App\Models\Buku::select('tahun_terbit')->distinct()->orderBy('tahun_terbit', 'desc')->pluck('tahun_terbit');
+        return view('buku.index', compact('bukus', 'kategoris', 'raks', 'tahunTerbitList'));
     }
 
     public function create()

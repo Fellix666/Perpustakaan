@@ -347,17 +347,6 @@
                             <td>:</td>
                             <td style="word-break: break-word; white-space: pre-line;">{{ $anggota->alamat }}</td>
                         </tr>
-                        <tr>
-                            <td>Status</td>
-                            <td>:</td>
-                            <td>
-                                @if($anggota->status_realtime == 'aktif')
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Non-Aktif</span>
-                                @endif
-                            </td>
-                        </tr>
                     </table>
                 </div>
                 

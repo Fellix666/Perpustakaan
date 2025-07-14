@@ -54,6 +54,42 @@
 @endsection
 
 @section('content')
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ route('anggota.index') }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="filterTahun" class="form-label mb-0">Tahun Daftar</label>
+                <select class="form-select" id="filterTahun" name="tahun_daftar">
+                    <option value="">Semua</option>
+                    @foreach($tahunDaftarList as $tahun)
+                        <option value="{{ $tahun }}" {{ request('tahun_daftar')==$tahun ? 'selected' : '' }}>{{ $tahun }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterKelas" class="form-label mb-0">Kelas</label>
+                <select class="form-select" id="filterKelas" name="kelas">
+                    <option value="">Semua</option>
+                    @foreach($kelasList as $kelas)
+                        <option value="{{ $kelas }}" {{ request('kelas')==$kelas ? 'selected' : '' }}>{{ $kelas }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterStatus" class="form-label mb-0">Status</label>
+                <select class="form-select" id="filterStatus" name="status">
+                    <option value="">Semua</option>
+                    <option value="aktif" {{ request('status')=='aktif' ? 'selected' : '' }}>Aktif</option>
+                    <option value="non-aktif" {{ request('status')=='non-aktif' ? 'selected' : '' }}>Non-Aktif</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-50"><i class="fas fa-filter me-2"></i>Filter</button>
+                <a href="{{ route('anggota.index') }}" class="btn btn-outline-secondary w-50">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="card">
     <div class="card-header">
         <div class="row align-items-center">

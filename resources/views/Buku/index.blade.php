@@ -54,6 +54,52 @@
 @endsection
 
 @section('content')
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ route('buku.index') }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="filterKategori" class="form-label mb-0">Kategori</label>
+                <select class="form-select" id="filterKategori" name="kategori_id">
+                    <option value="">Semua</option>
+                    @foreach($kategoris as $kategori)
+                        <option value="{{ $kategori->id }}" {{ request('kategori_id')==$kategori->id ? 'selected' : '' }}>{{ $kategori->nama_kategori }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filterRak" class="form-label mb-0">Rak</label>
+                <select class="form-select" id="filterRak" name="rak_id">
+                    <option value="">Semua</option>
+                    @foreach($raks as $rak)
+                        <option value="{{ $rak->id }}" {{ request('rak_id')==$rak->id ? 'selected' : '' }}>{{ $rak->nama_rak }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="filterTahun" class="form-label mb-0">Tahun Terbit</label>
+                <select class="form-select" id="filterTahun" name="tahun_terbit">
+                    <option value="">Semua</option>
+                    @foreach($tahunTerbitList as $tahun)
+                        <option value="{{ $tahun }}" {{ request('tahun_terbit')==$tahun ? 'selected' : '' }}>{{ $tahun }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="filterStatus" class="form-label mb-0">Status</label>
+                <select class="form-select" id="filterStatus" name="status">
+                    <option value="">Semua</option>
+                    <option value="tersedia" {{ request('status')=='tersedia' ? 'selected' : '' }}>Tersedia</option>
+                    <option value="tidak-tersedia" {{ request('status')=='tidak-tersedia' ? 'selected' : '' }}>Tidak Tersedia</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-50"><i class="fas fa-filter me-2"></i>Filter</button>
+                <a href="{{ route('buku.index') }}" class="btn btn-outline-secondary w-50">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <div class="row align-items-center">
