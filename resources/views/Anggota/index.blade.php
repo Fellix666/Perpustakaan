@@ -106,7 +106,7 @@
                         <td>{{ $anggota->kelas }}</td>
                         <td>{{ $anggota->tanggal_daftar->format('d/m/Y') }}</td>
                         <td>
-                            @if($anggota->status == 'aktif')
+                            @if($anggota->status_realtime == 'aktif')
                                 <span class="badge bg-success">Aktif</span>
                             @else
                                 <span class="badge bg-danger">Non-Aktif</span>

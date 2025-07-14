@@ -40,7 +40,8 @@
                                 <label for="tanggal_daftar" class="form-label">Tanggal Daftar <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control @error('tanggal_daftar') is-invalid @enderror" 
                                        id="tanggal_daftar" name="tanggal_daftar" 
-                                       value="{{ old('tanggal_daftar', $anggota->tanggal_daftar->format('Y-m-d')) }}">
+                                       value="{{ old('tanggal_daftar', $anggota->tanggal_daftar->format('Y-m-d')) }}"
+                                       max="{{ date('Y-m-d') }}">
                                 @error('tanggal_daftar')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -57,6 +58,27 @@
                         @error('nama_lengkap')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tempat_lahir" class="form-label">Tempat Lahir <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('tempat_lahir') is-invalid @enderror" id="tempat_lahir" name="tempat_lahir" value="{{ old('tempat_lahir', $anggota->tempat_lahir) }}" placeholder="Contoh: Jakarta">
+                                @error('tempat_lahir')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tanggal_lahir" class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control @error('tanggal_lahir') is-invalid @enderror" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir', $anggota->tanggal_lahir ? $anggota->tanggal_lahir->format('Y-m-d') : '') }}">
+                                @error('tanggal_lahir')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">

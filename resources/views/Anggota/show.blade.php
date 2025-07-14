@@ -59,6 +59,11 @@
                         <td>{{ $anggota->nama_lengkap }}</td>
                     </tr>
                     <tr>
+                        <td><strong>Tempat, Tgl Lahir</strong></td>
+                        <td>:</td>
+                        <td>{{ $anggota->tempat_lahir }}, {{ $anggota->tanggal_lahir ? $anggota->tanggal_lahir->format('d/m/Y') : '-' }}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Jenis Kelamin</strong></td>
                         <td>:</td>
                         <td>

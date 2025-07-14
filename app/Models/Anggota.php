@@ -12,6 +12,8 @@ class Anggota extends Model
     protected $fillable = [
         'nomor_anggota',
         'nama_lengkap',
+        'tempat_lahir',
+        'tanggal_lahir',
         'jenis_kelamin',
         'kelas',
         'alamat',
@@ -22,7 +24,8 @@ class Anggota extends Model
     ];
 
     protected $casts = [
-        'tanggal_daftar' => 'date'
+        'tanggal_daftar' => 'date',
+        'tanggal_lahir' => 'date',
     ];
 
     public function peminjamans()
@@ -33,6 +36,16 @@ class Anggota extends Model
     public function peminjamanAktif()
     {
         return $this->hasMany(Peminjaman::class)->where('status', 'dipinjam');
+    }
+
+    public function getStatusRealtimeAttribute()
+    {
+        // Jika status database sudah non-aktif, langsung non-aktif
+        if ($this->status === 'non-aktif') return 'non-aktif';
+        // Jika status database aktif, cek masa berlaku 3 tahun
+        if (!$this->tanggal_daftar) return $this->status;
+        $expired = $this->tanggal_daftar->copy()->addYears(3);
+        return now()->lessThanOrEqualTo($expired) ? 'aktif' : 'non-aktif';
     }
 }
 

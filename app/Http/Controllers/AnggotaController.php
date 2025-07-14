@@ -9,7 +9,7 @@ class AnggotaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Anggota::orderBy('nama_lengkap');
+        $query = Anggota::orderBy('nomor_anggota');
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function($sub) use ($q) {
@@ -38,11 +38,13 @@ class AnggotaController extends Controller
         $request->validate([
             'nomor_anggota' => 'required|unique:anggotas,nomor_anggota',
             'nama_lengkap' => 'required|max:100',
+            'tempat_lahir' => 'required|max:100',
+            'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'kelas' => 'required|max:20',
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
-            'tanggal_daftar' => 'required|date',
+            'tanggal_daftar' => 'required|date|before_or_equal:today',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -81,11 +83,13 @@ class AnggotaController extends Controller
         $request->validate([
             'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id,
             'nama_lengkap' => 'required|max:100',
+            'tempat_lahir' => 'required|max:100',
+            'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'kelas' => 'required|max:20',
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
-            'tanggal_daftar' => 'required|date',
+            'tanggal_daftar' => 'required|date|before_or_equal:today',
             'status' => 'required|in:aktif,non-aktif',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -233,11 +237,13 @@ class AnggotaController extends Controller
                 \App\Models\Anggota::create([
                     'nomor_anggota' => $row['nomor_anggota'],
                     'nama_lengkap' => $row['nama_lengkap'],
+                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
+                    'tanggal_lahir' => $this->parseExcelDate($row['tanggal_lahir'] ?? null),
                     'jenis_kelamin' => $row['jenis_kelamin'],
                     'kelas' => $row['kelas'],
                     'alamat' => $row['alamat'],
                     'telepon' => $row['telepon'] ?? null,
-                    'tanggal_daftar' => $row['tanggal_daftar'],
+                    'tanggal_daftar' => $this->parseExcelDate($row['tanggal_daftar'] ?? null),
                     'status' => $row['status'] ?? 'aktif',
                 ]);
                 $imported++;
@@ -255,5 +261,32 @@ class AnggotaController extends Controller
         } else {
             return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', $errors));
         }
+    }
+
+    // Tambahan: fungsi konversi tanggal dari Excel
+    private function parseExcelDate($value)
+    {
+        // Jika numeric (serial Excel)
+        if (is_numeric($value)) {
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        // Jika string, coba parse ke Y-m-d
+        if ($value) {
+            $formats = [
+                'Y-m-d', 'd/m/Y', 'm/d/Y', 'Y/m/d', 'd-m-Y', 'm-d-Y', 'd.m.Y', 'Y.m.d'
+            ];
+            foreach ($formats as $fmt) {
+                $date = \DateTime::createFromFormat($fmt, $value);
+                if ($date) return $date->format('Y-m-d');
+            }
+            // Coba parse otomatis
+            $date = date_create($value);
+            if ($date) return $date->format('Y-m-d');
+        }
+        return null;
     }
 }

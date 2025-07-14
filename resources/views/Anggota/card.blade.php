@@ -21,8 +21,8 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
-            width: 350px;
-            height: 220px;
+            width: 480px;
+            height: 250px;
             position: relative;
         }
 
@@ -75,7 +75,7 @@
         }
 
         .card-body {
-            padding: 15px 20px;
+            padding: 15px 20px 0 20px;
             background: white;
             position: relative;
             height: calc(100% - 70px);
@@ -83,12 +83,15 @@
 
         .member-info {
             display: flex;
-            gap: 15px;
+            gap: 10px;
+            align-items: flex-start;
             height: 100%;
         }
 
         .info-section {
-            flex: 1;
+            flex: 2;
+            min-width: 0;
+            margin-bottom: 0;
         }
 
         .info-table {
@@ -98,7 +101,7 @@
 
         .info-table td {
             padding: 2px 0;
-            font-size: 10px;
+            font-size: 9.5px;
             line-height: 1.4;
             vertical-align: top;
         }
@@ -119,6 +122,9 @@
             width: 60%;
             font-weight: 600;
             color: #333;
+            word-break: break-word;
+            white-space: pre-line;
+            max-width: 160px;
         }
 
         .member-id {
@@ -133,15 +139,18 @@
         }
 
         .photo-section {
+            flex: 1;
             width: 70px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            align-self: flex-start;
+            justify-content: flex-start;
         }
 
         .photo-placeholder {
             width: 60px;
-            height: 80px;
+            height: 70px;
             border: 2px solid #ddd;
             border-radius: 8px;
             background: linear-gradient(145deg, #f8f9fa, #e9ecef);
@@ -170,12 +179,13 @@
             left: 0;
             right: 0;
             background: #f8f9fa;
-            padding: 8px 20px;
+            padding: 10px 20px 8px 20px;
             border-top: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 8px;
+            margin-top: 0;
         }
 
         .validity-info {
@@ -227,8 +237,9 @@
                 box-shadow: none;
                 border: 2px solid #000;
                 margin: 0;
-                width: 85.6mm;
-                height: 54mm;
+                width: 110mm;
+                min-height: 54mm;
+                height: auto !important;
                 border-radius: 8px;
             }
             
@@ -244,6 +255,10 @@
                 print-color-adjust: exact;
             }
             
+            .card-footer {
+                position: static !important;
+            }
+
             @page {
                 size: A4;
                 margin: 20mm;
@@ -313,6 +328,11 @@
                             <td>{{ $anggota->nama_lengkap }}</td>
                         </tr>
                         <tr>
+                            <td>Tempat, Tgl Lahir</td>
+                            <td>:</td>
+                            <td>{{ $anggota->tempat_lahir }}, {{ $anggota->tanggal_lahir ? $anggota->tanggal_lahir->format('d/m/Y') : '-' }}</td>
+                        </tr>
+                        <tr>
                             <td>Jenis Kelamin</td>
                             <td>:</td>
                             <td>{{ $anggota->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
@@ -325,12 +345,18 @@
                         <tr>
                             <td>Alamat</td>
                             <td>:</td>
-                            <td>{{ Str::limit($anggota->alamat, 40) }}</td>
+                            <td style="word-break: break-word; white-space: pre-line;">{{ $anggota->alamat }}</td>
                         </tr>
                         <tr>
-                            <td>Tgl. Daftar</td>
+                            <td>Status</td>
                             <td>:</td>
-                            <td>{{ $anggota->tanggal_daftar->format('d/m/Y') }}</td>
+                            <td>
+                                @if($anggota->status_realtime == 'aktif')
+                                    <span class="badge bg-success">Aktif</span>
+                                @else
+                                    <span class="badge bg-danger">Non-Aktif</span>
+                                @endif
+                            </td>
                         </tr>
                     </table>
                 </div>
@@ -351,7 +377,7 @@
         <div class="card-footer">
             <div class="validity-info">
                 <div>Berlaku sampai:</div>
-                <div class="validity-date">{{ $anggota->tanggal_daftar->addYear()->format('d/m/Y') }}</div>
+                <div class="validity-date">{{ $anggota->tanggal_daftar->addYears(3)->format('d/m/Y') }}</div>
             </div>
             <div class="signature-area">
                 <div>Kepala Perpustakaan</div>
