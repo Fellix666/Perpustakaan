@@ -72,7 +72,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::resource('peminjaman', PeminjamanController::class);
     Route::get('peminjaman/{peminjaman}/pengembalian', [PeminjamanController::class, 'pengembalian'])->name('peminjaman.pengembalian');
     Route::post('peminjaman/{peminjaman}/pengembalian', [PeminjamanController::class, 'prosesPengembalian'])->name('peminjaman.proses-pengembalian');
-
+    
     // Routes untuk Pengembalian (resourceful)
     Route::resource('pengembalian', PengembalianController::class)->except(['create', 'store']);
     // Proses pengembalian tetap pakai route custom (untuk pengembalian dari peminjaman)
