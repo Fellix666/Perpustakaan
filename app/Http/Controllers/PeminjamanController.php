@@ -108,4 +108,34 @@ class PeminjamanController extends Controller
 
         return redirect()->route('peminjaman.index')->with('success', 'Pengembalian berhasil diproses');
     }
+
+    public function edit(Peminjaman $peminjaman)
+    {
+        $anggotas = \App\Models\Anggota::where('status', 'aktif')->orderBy('nama_lengkap')->get();
+        $bukus = \App\Models\Buku::where('status', 'tersedia')->orWhere('id', $peminjaman->buku_id)->orderBy('judul')->get();
+        return view('peminjaman.edit', compact('peminjaman', 'anggotas', 'bukus'));
+    }
+
+    public function update(Request $request, Peminjaman $peminjaman)
+    {
+        $request->validate([
+            'anggota_id' => 'required|exists:anggotas,id',
+            'buku_id' => 'required|exists:bukus,id',
+            'tanggal_pinjam' => 'required|date',
+            'tanggal_kembali_rencana' => 'required|date|after:tanggal_pinjam'
+        ]);
+        $peminjaman->update($request->only(['anggota_id', 'buku_id', 'tanggal_pinjam', 'tanggal_kembali_rencana', 'keterangan']));
+        $peminjaman->buku->updateStok();
+        return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui');
+    }
+
+    public function destroy(Peminjaman $peminjaman)
+    {
+        if ($peminjaman->status == 'dikembalikan') {
+            return back()->with('error', 'Tidak dapat menghapus peminjaman yang sudah dikembalikan');
+        }
+        $peminjaman->delete();
+        $peminjaman->buku->updateStok();
+        return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil dihapus');
+    }
 }

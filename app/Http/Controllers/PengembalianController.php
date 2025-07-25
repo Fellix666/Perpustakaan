@@ -91,4 +91,36 @@ class PengembalianController extends Controller
         return redirect()->route('pengembalian.index')
                         ->with('success', 'Pengembalian berhasil diproses');
     }
+
+    public function edit($id)
+    {
+        $peminjaman = \App\Models\Peminjaman::with(['anggota', 'buku'])->findOrFail($id);
+        if ($peminjaman->status != 'dikembalikan') {
+            return back()->with('error', 'Pengembalian hanya bisa diedit jika status sudah dikembalikan');
+        }
+        return view('pengembalian.edit', compact('peminjaman'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal_kembali_aktual' => 'required|date',
+            'keterangan' => 'nullable|string'
+        ]);
+        $peminjaman = \App\Models\Peminjaman::findOrFail($id);
+        $peminjaman->tanggal_kembali_aktual = $request->tanggal_kembali_aktual;
+        $peminjaman->keterangan = $request->keterangan;
+        $peminjaman->save();
+        return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $peminjaman = \App\Models\Peminjaman::findOrFail($id);
+        if ($peminjaman->status != 'dikembalikan') {
+            return back()->with('error', 'Hanya pengembalian yang sudah selesai yang bisa dihapus');
+        }
+        $peminjaman->delete();
+        return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil dihapus');
+    }
 }

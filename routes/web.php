@@ -68,16 +68,16 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::put('rak/{rak}', [RakController::class, 'update'])->name('rak.update');
     Route::delete('rak/{rak}', [RakController::class, 'destroy'])->name('rak.destroy');
     
-    // Routes lainnya
+    // Routes untuk Peminjaman (resourceful)
     Route::resource('peminjaman', PeminjamanController::class);
-    
-    Route::get('peminjaman/{id}/pengembalian', [PeminjamanController::class, 'pengembalian'])->name('peminjaman.pengembalian');
-    Route::post('peminjaman/{id}/pengembalian', [PeminjamanController::class, 'prosesPengembalian'])->name('peminjaman.proses-pengembalian');
-    
-    Route::get('pengembalian', [PengembalianController::class, 'index'])->name('pengembalian.index');
-    Route::get('pengembalian/{id}', [PengembalianController::class, 'show'])->name('pengembalian.show');
-    Route::get('pengembalian/{id}/proses', [PengembalianController::class, 'create'])->name('pengembalian.create');
-    Route::post('pengembalian/{id}/proses', [PengembalianController::class, 'store'])->name('pengembalian.store');
+    Route::get('peminjaman/{peminjaman}/pengembalian', [PeminjamanController::class, 'pengembalian'])->name('peminjaman.pengembalian');
+    Route::post('peminjaman/{peminjaman}/pengembalian', [PeminjamanController::class, 'prosesPengembalian'])->name('peminjaman.proses-pengembalian');
+
+    // Routes untuk Pengembalian (resourceful)
+    Route::resource('pengembalian', PengembalianController::class)->except(['create', 'store']);
+    // Proses pengembalian tetap pakai route custom (untuk pengembalian dari peminjaman)
+    Route::get('pengembalian/{peminjaman}/proses', [PengembalianController::class, 'create'])->name('pengembalian.create');
+    Route::post('pengembalian/{peminjaman}/proses', [PengembalianController::class, 'store'])->name('pengembalian.store');
     
     Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
     Route::get('denda/{id}/bayar', [DendaController::class, 'bayar'])->name('denda.bayar');
