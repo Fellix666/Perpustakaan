@@ -19,9 +19,13 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('anggota.store') }}" method="POST" id="formAnggota">
+                {{-- ====================================================== --}}
+                {{-- <<<--- PERBAIKAN: Tambahkan enctype di sini ---<<< --}}
+                {{-- ====================================================== --}}
+                <form action="{{ route('anggota.store') }}" method="POST" id="formAnggota" enctype="multipart/form-data">
                     @csrf
                     
+                    {{-- ... Sisa isi form Anda tetap sama ... --}}
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -185,7 +189,6 @@
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>Informasi:</strong> Status anggota akan otomatis diset sebagai "Aktif" setelah pendaftaran berhasil.
                     </div>
-
                 </form>
             </div>
             <div class="card-footer">

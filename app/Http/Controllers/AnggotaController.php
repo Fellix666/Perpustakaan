@@ -10,19 +10,13 @@ use ZipArchive;
 
 class AnggotaController extends Controller
 {
-    // ... method index() hingga import() Anda ...
+    // ... method index() dan create() Anda tetap sama ...
     public function index(Request $request)
     {
         $query = Anggota::query();
-        if ($request->filled('tahun_daftar')) {
-            $query->whereYear('tanggal_daftar', $request->tahun_daftar);
-        }
-        if ($request->filled('kelas')) {
-            $query->where('kelas', $request->kelas);
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        if ($request->filled('tahun_daftar')) { $query->whereYear('tanggal_daftar', $request->tahun_daftar); }
+        if ($request->filled('kelas')) { $query->where('kelas', $request->kelas); }
+        if ($request->filled('status')) { $query->where('status', $request->status); }
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function($sub) use ($q) {
@@ -45,6 +39,9 @@ class AnggotaController extends Controller
         return view('anggota.create');
     }
 
+    /**
+     * PERBAIKAN: Menyeragamkan cara menyimpan file.
+     */
     public function store(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -62,14 +59,18 @@ class AnggotaController extends Controller
             'tanggal_daftar' => 'required|date|before_or_equal:today',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-        $data = $request->all();
+        
+        $data = $request->except('foto'); // Ambil semua data kecuali foto
         $data['status'] = 'aktif';
+
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $filename = uniqid('anggota_') . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/anggota', $filename);
+            // Simpan file menggunakan metode yang sama dengan ZIP upload
+            $file->storeAs('anggota', $filename, 'public');
             $data['foto'] = $filename;
         }
+        
         Anggota::create($data);
         return redirect()->route('anggota.index')->with('success', 'Anggota berhasil ditambahkan');
     }
@@ -88,6 +89,9 @@ class AnggotaController extends Controller
         return view('anggota.edit', compact('anggota'));
     }
 
+    /**
+     * PERBAIKAN: Menyeragamkan cara menyimpan file.
+     */
     public function update(Request $request, Anggota $anggota)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -106,20 +110,26 @@ class AnggotaController extends Controller
             'status' => 'required|in:aktif,non-aktif',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
         $data = $request->except('foto');
+
         if ($request->hasFile('foto')) {
+            // Hapus foto lama
             if ($anggota->foto && Storage::disk('public')->exists('anggota/' . $anggota->foto)) {
                 Storage::disk('public')->delete('anggota/' . $anggota->foto);
             }
             $file = $request->file('foto');
             $filename = uniqid('anggota_') . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/anggota', $filename);
+            // Simpan file menggunakan metode yang sama dengan ZIP upload
+            $file->storeAs('anggota', $filename, 'public');
             $data['foto'] = $filename;
         }
+
         $anggota->update($data);
         return redirect()->route('anggota.index')->with('success', 'Anggota berhasil diperbarui');
     }
 
+    // ... sisa method Anda (destroy, card, dll.) tetap sama ...
     public function destroy(Anggota $anggota)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {

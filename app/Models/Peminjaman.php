@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon; // <-- TAMBAHKAN INI
 
 class Peminjaman extends Model
 {
@@ -14,7 +15,6 @@ class Peminjaman extends Model
     protected $fillable = [
         'kode_peminjaman', 'anggota_id', 'buku_id', 'tanggal_pinjam', 
         'tanggal_kembali_rencana', 'tanggal_kembali_aktual', 
-        // 'denda',
         'status', 'keterangan'
     ];
 
@@ -34,11 +34,27 @@ class Peminjaman extends Model
         return $this->belongsTo(Buku::class);
     }
 
-    /**
-     * PERBAIKAN: Mengubah nama relasi untuk menghindari konflik dengan kolom 'denda'.
-     */
     public function dendaRecord()
     {
         return $this->hasOne(Denda::class);
+    }
+
+    // =================================================================
+    // <<<--- TAMBAHAN: Accessor untuk status real-time ---<<<
+    // =================================================================
+    public function getStatusRealtimeAttribute()
+    {
+        // Jika status di database sudah 'dikembalikan', maka final.
+        if ($this->attributes['status'] === 'dikembalikan') {
+            return 'dikembalikan';
+        }
+
+        // Jika belum dikembalikan, cek apakah sudah lewat batas waktu.
+        if (Carbon::now()->startOfDay()->isAfter($this->attributes['tanggal_kembali_rencana'])) {
+            return 'terlambat';
+        }
+
+        // Jika tidak keduanya, berarti masih 'dipinjam'.
+        return 'dipinjam';
     }
 }

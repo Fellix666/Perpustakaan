@@ -18,10 +18,14 @@
                 <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Form Edit Anggota</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('anggota.update', $anggota) }}" method="POST" id="formAnggota">
+                {{-- ====================================================== --}}
+                {{-- <<<--- PERBAIKAN: Tambahkan enctype di sini ---<<< --}}
+                {{-- ====================================================== --}}
+                <form action="{{ route('anggota.update', $anggota) }}" method="POST" id="formAnggota" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
+                    {{-- ... Sisa isi form Anda tetap sama ... --}}
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -144,13 +148,8 @@
                         @enderror
                     </div>
 
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Peringatan:</strong> Mengubah status menjadi "Non-Aktif" akan mencegah anggota melakukan peminjaman buku baru.
-                    </div>
-
                     <div class="mb-3">
-                        <label for="foto" class="form-label">Foto Anggota (opsional)</label>
+                        <label for="foto" class="form-label">Ganti Foto Anggota (opsional)</label>
                         <input type="file" class="form-control @error('foto') is-invalid @enderror" id="foto" name="foto" accept="image/*">
                         @error('foto')
                             <div class="invalid-feedback">{{ $message }}</div>

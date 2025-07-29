@@ -18,10 +18,10 @@
     <a href="{{ route('anggota.edit', $anggota) }}" class="btn btn-warning">
         <i class="fas fa-edit me-2"></i>Edit
     </a>
-    <form action="{{ route('anggota.destroy', $anggota) }}" method="POST" style="display: inline;">
+    <form action="{{ route('anggota.destroy', $anggota) }}" method="POST" style="display: inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn btn-danger" onclick="confirmDelete(event)">
+        <button type="submit" class="btn btn-danger">
             <i class="fas fa-trash me-2"></i>Hapus
         </button>
     </form>
@@ -47,26 +47,22 @@
                     @endif
                 </div>
                 
-                <table class="table table-borderless">
+                <table class="table table-borderless table-sm">
                     <tr>
                         <td width="40%"><strong>No. Anggota</strong></td>
-                        <td>:</td>
-                        <td><code class="fs-6">{{ $anggota->nomor_anggota }}</code></td>
+                        <td>: <code class="fs-6">{{ $anggota->nomor_anggota }}</code></td>
                     </tr>
                     <tr>
                         <td><strong>Nama Lengkap</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->nama_lengkap }}</td>
+                        <td>: {{ $anggota->nama_lengkap }}</td>
                     </tr>
                     <tr>
                         <td><strong>Tempat, Tgl Lahir</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->tempat_lahir }}, {{ $anggota->tanggal_lahir ? $anggota->tanggal_lahir->format('d/m/Y') : '-' }}</td>
+                        <td>: {{ $anggota->tempat_lahir }}, {{ $anggota->tanggal_lahir ? $anggota->tanggal_lahir->format('d/m/Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td><strong>Jenis Kelamin</strong></td>
-                        <td>:</td>
-                        <td>
+                        <td>: 
                             @if($anggota->jenis_kelamin == 'L')
                                 <span class="badge bg-primary">Laki-laki</span>
                             @else
@@ -76,28 +72,23 @@
                     </tr>
                     <tr>
                         <td><strong>Kelas</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->kelas }}</td>
+                        <td>: {{ $anggota->kelas }}</td>
                     </tr>
                     <tr>
                         <td><strong>Alamat</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->alamat }}</td>
+                        <td>: {{ $anggota->alamat }}</td>
                     </tr>
                     <tr>
                         <td><strong>Telepon</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->telepon ?? 'Tidak ada' }}</td>
+                        <td>: {{ $anggota->telepon ?? 'Tidak ada' }}</td>
                     </tr>
                     <tr>
                         <td><strong>Tanggal Daftar</strong></td>
-                        <td>:</td>
-                        <td>{{ $anggota->tanggal_daftar->format('d F Y') }}</td>
+                        <td>: {{ $anggota->tanggal_daftar->format('d F Y') }}</td>
                     </tr>
                     <tr>
                         <td><strong>Status</strong></td>
-                        <td>:</td>
-                        <td>
+                        <td>: 
                             @if($anggota->status == 'aktif')
                                 <span class="badge bg-success">Aktif</span>
                             @else
@@ -123,8 +114,8 @@
                             <tr>
                                 <th>No</th>
                                 <th>Judul Buku</th>
-                                <th>Tanggal Pinjam</th>
-                                <th>Tanggal Kembali</th>
+                                <th>Tgl Pinjam</th>
+                                <th>Tgl Kembali</th>
                                 <th>Status</th>
                                 <th>Denda</th>
                             </tr>
@@ -134,30 +125,37 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
-                                    <div class="fw-bold">{{ $peminjaman->buku->judul }}</div>
-                                    <small class="text-muted">{{ $peminjaman->buku->penulis }}</small>
+                                    <div class="fw-bold">{{ $peminjaman->buku->judul ?? 'Buku Dihapus' }}</div>
+                                    <small class="text-muted">{{ $peminjaman->buku->pengarang ?? '-' }}</small>
                                 </td>
                                 <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
                                 <td>
-                                    @if($peminjaman->tanggal_kembali)
-                                        {{ $peminjaman->tanggal_kembali->format('d/m/Y') }}
+                                    {{-- ====================================================== --}}
+                                    {{-- <<<--- PERBAIKAN 1: Gunakan tanggal_kembali_aktual ---<<< --}}
+                                    {{-- ====================================================== --}}
+                                    @if($peminjaman->tanggal_kembali_aktual)
+                                        {{ $peminjaman->tanggal_kembali_aktual->format('d/m/Y') }}
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($peminjaman->status == 'dipinjam')
-                                        <span class="badge bg-warning">Dipinjam</span>
-                                    @elseif($peminjaman->status == 'dikembalikan')
+                                    @php $status = $peminjaman->status_realtime; @endphp
+                                    @if($status == 'dipinjam')
+                                        <span class="badge bg-warning text-dark">Dipinjam</span>
+                                    @elseif($status == 'dikembalikan')
                                         <span class="badge bg-success">Dikembalikan</span>
-                                    @elseif($peminjaman->status == 'terlambat')
+                                    @elseif($status == 'terlambat')
                                         <span class="badge bg-danger">Terlambat</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($peminjaman->denda)
-                                        <span class="text-danger fw-bold">Rp {{ number_format($peminjaman->denda->jumlah_denda, 0, ',', '.') }}</span>
-                                        @if($peminjaman->denda->status == 'lunas')
+                                    {{-- ====================================================== --}}
+                                    {{-- <<<--- PERBAIKAN 2: Gunakan relasi dendaRecord ---<<< --}}
+                                    {{-- ====================================================== --}}
+                                    @if($peminjaman->dendaRecord)
+                                        <span class="text-danger fw-bold">Rp {{ number_format($peminjaman->dendaRecord->total_denda, 0, ',', '.') }}</span>
+                                        @if($peminjaman->dendaRecord->status_bayar == 'dibayar')
                                             <br><small class="badge bg-success">Lunas</small>
                                         @else
                                             <br><small class="badge bg-danger">Belum Lunas</small>
@@ -172,40 +170,8 @@
                     </table>
                 </div>
                 
-                <div class="row mt-4">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ $anggota->peminjamans->count() }}</h3>
-                                <small>Total Peminjaman</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ $anggota->peminjamans->where('status', 'dipinjam')->count() }}</h3>
-                                <small>Sedang Dipinjam</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ $anggota->peminjamans->where('status', 'dikembalikan')->count() }}</h3>
-                                <small>Sudah Dikembalikan</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <h3>{{ $anggota->peminjamans->where('status', 'terlambat')->count() }}</h3>
-                                <small>Terlambat</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {{-- Kartu rekapitulasi Anda --}}
+                
                 @else
                 <div class="text-center py-5">
                     <i class="fas fa-book fa-3x text-muted mb-3"></i>
@@ -217,16 +183,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-function confirmDelete(event) {
-    event.preventDefault();
-    if (confirm('Apakah Anda yakin ingin menghapus anggota ini?')) {
-        event.target.closest('form').submit();
-    }
-    return false;
-}
-</script>
 @endsection

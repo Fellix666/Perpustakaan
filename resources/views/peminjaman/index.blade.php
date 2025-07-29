@@ -21,8 +21,8 @@
                     <select class="form-select" id="filterStatus" name="status">
                         <option value="">Semua</option>
                         <option value="dipinjam" {{ request('status') == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                        <option value="dikembalikan" {{ request('status') == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
                         <option value="terlambat" {{ request('status') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                        <option value="dikembalikan" {{ request('status') == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -80,23 +80,28 @@
                                     <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
                                     <td>{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
                                     <td>
-                                        @if($peminjaman->status == 'dipinjam')
-                                            <span class="badge bg-warning">Dipinjam</span>
-                                        @elseif($peminjaman->status == 'dikembalikan')
+                                        {{-- ====================================================== --}}
+                                        {{-- <<<--- PERBAIKAN: Menggunakan status_realtime ---<<< --}}
+                                        {{-- ====================================================== --}}
+                                        @php $status = $peminjaman->status_realtime; @endphp
+                                        @if($status == 'dipinjam')
+                                            <span class="badge bg-warning text-dark">Dipinjam</span>
+                                        @elseif($status == 'dikembalikan')
                                             <span class="badge bg-success">Dikembalikan</span>
-                                        @elseif($peminjaman->status == 'terlambat')
+                                        @elseif($status == 'terlambat')
                                             <span class="badge bg-danger">Terlambat</span>
                                         @endif
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a href="{{ route('peminjaman.show', $peminjaman) }}" class="btn btn-info" title="Detail"><i class="fas fa-eye"></i></a>
+                                            {{-- Logika ini sudah benar, karena status 'terlambat' secara database masih 'dipinjam' --}}
                                             @if($peminjaman->status != 'dikembalikan')
                                                 <a href="{{ route('peminjaman.edit', $peminjaman) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <form action="{{ route('peminjaman.destroy', $peminjaman) }}" method="POST" style="display:inline;">
+                                                <form action="{{ route('peminjaman.destroy', $peminjaman) }}" method="POST" style="display:inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger" title="Hapus" onclick="return confirm('Anda yakin ingin menghapus data ini?')"><i class="fas fa-trash"></i></button>
+                                                    <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                                 </form>
                                                 <a href="{{ route('pengembalian.create', $peminjaman->id) }}" class="btn btn-success" title="Proses Pengembalian"><i class="fas fa-undo"></i></a>
                                             @endif
@@ -108,7 +113,6 @@
                     </table>
                 </div>
                 <div class="card-footer">
-                    {{-- Menampilkan link paginasi --}}
                     {{ $peminjamans->links() }}
                 </div>
             @else
