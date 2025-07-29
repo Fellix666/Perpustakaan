@@ -9,16 +9,20 @@
 @endsection
 
 @section('page-actions')
-<div class="d-flex gap-2">
+<div class="d-flex flex-wrap gap-2">
     @if(auth('admin')->user()->role === 'admin')
     <a href="{{ route('anggota.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-2"></i>Tambah Anggota
     </a>
-    <a href="/template/template_import_anggota.xlsx" class="btn btn-outline-info" target="_blank">
-        <i class="fas fa-download me-2"></i>Download Template Excel
+    <a href="/template/template_import_anggota.xlsx" class="btn btn-outline-success" target="_blank">
+        <i class="fas fa-download me-2"></i>Template Excel
     </a>
-    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
         <i class="fas fa-file-import me-2"></i>Import Excel
+    </button>
+    {{-- TOMBOL BARU UNTUK UPLOAD FOTO ZIP --}}
+    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
+        <i class="fas fa-file-archive me-2"></i>Upload Foto ZIP
     </button>
     @endif
 </div>
@@ -38,10 +42,6 @@
             <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
             <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
           </div>
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Download template: <a href="/template/template_import_anggota.xlsx" target="_blank">Excel</a>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -51,9 +51,44 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL BARU: Upload Foto ZIP -->
+<div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-labelledby="uploadFotoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('anggota.proses-upload-foto') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadFotoModalLabel">Upload Foto Anggota Massal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">
+                <strong>Petunjuk:</strong>
+                <ol class="mb-0">
+                    <li>Siapkan semua file foto (JPG, PNG).</li>
+                    <li>Ubah nama setiap foto agar sama persis dengan <strong>Nomor Anggota</strong>. Contoh: <strong>AGT2025001.jpg</strong></li>
+                    <li>Masukkan semua foto tersebut ke dalam satu file <strong>.zip</strong>.</li>
+                    <li>Upload file .zip di bawah ini.</li>
+                </ol>
+            </div>
+            <div class="mb-3">
+                <label for="zip_file" class="form-label">Pilih File ZIP</label>
+                <input type="file" class="form-control" name="zip_file" id="zip_file" accept=".zip" required>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Upload & Proses</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
+{{-- Seluruh bagian @section('content') Anda tetap sama, tidak perlu diubah. --}}
 <div class="card mb-3">
     <div class="card-body">
         <form method="GET" action="{{ route('anggota.index') }}" class="row g-2 align-items-end">
@@ -201,6 +236,7 @@
 @endsection
 
 @section('scripts')
+{{-- Seluruh bagian @section('scripts') Anda tetap sama, tidak perlu diubah. --}}
 <script>
 function confirmDelete(event) {
     event.preventDefault();
