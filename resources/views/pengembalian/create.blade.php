@@ -1,12 +1,10 @@
 @extends('layouts.app')
-
 @section('title', 'Form Pengembalian Buku')
 @section('page-title', 'Form Pengembalian Buku')
-
 @section('breadcrumb')
-<li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-<li class="breadcrumb-item"><a href="{{ route('pengembalian.index') }}">Data Pengembalian</a></li>
-<li class="breadcrumb-item active">Pengembalian Buku</li>
+    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('pengembalian.index') }}">Data Pengembalian</a></li>
+    <li class="breadcrumb-item active">Pengembalian Buku</li>
 @endsection
 
 @section('content')
@@ -37,7 +35,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tanggal_kembali_aktual" class="form-label">Tanggal Kembali Aktual <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control @error('tanggal_kembali_aktual') is-invalid @enderror" id="tanggal_kembali_aktual" name="tanggal_kembali_aktual" value="{{ old('tanggal_kembali_aktual', date('Y-m-d')) }}" required>
+                        <input type="date" class="form-control @error('tanggal_kembali_aktual') is-invalid @enderror" id="tanggal_kembali_aktual" name="tanggal_kembali_aktual" value="{{ old('tanggal_kembali_aktual') }}" required>
                         @error('tanggal_kembali_aktual')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -49,27 +47,17 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    @if(isset($hariTerlambat) && $hariTerlambat > 0)
-                    <div class="alert alert-warning">
-                        <strong>Terlambat {{ $hariTerlambat }} hari.</strong><br>
-                        Total denda: <strong>Rp {{ number_format($totalDenda,0,',','.') }}</strong>
-                    </div>
-                    @endif
                 </form>
             </div>
             <div class="card-footer">
                 <div class="d-flex justify-content-between">
-                    <a href="{{ route('pengembalian.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Kembali
-                    </a>
+                    <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Kembali</a>
                     <div>
-                        <button type="submit" form="formPengembalian" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Simpan Pengembalian
-                        </button>
+                        <button type="submit" form="formPengembalian" class="btn btn-primary"><i class="fas fa-save me-2"></i>Simpan Pengembalian</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection 
+@endsection

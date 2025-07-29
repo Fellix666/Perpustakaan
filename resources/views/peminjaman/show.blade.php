@@ -48,11 +48,13 @@
                         </div>
                         <div class="mb-3">
                             <span class="fw-bold text-secondary">Denda</span><br>
-                            @if($peminjaman->denda)
-                                <span class="text-danger fw-bold fs-6">Rp {{ number_format($peminjaman->denda->total_denda, 0, ',', '.') }}</span>
-                                <br><small class="badge bg-{{ $peminjaman->denda->status_bayar == 'belum-dibayar' ? 'danger' : 'success' }}">{{ $peminjaman->denda->status_bayar == 'belum-dibayar' ? 'Belum Lunas' : 'Lunas' }}</small>
+                            {{-- PERBAIKAN DI SINI --}}
+                            @if($peminjaman->dendaRecord)
+                                <span class="text-danger fw-bold fs-6">Rp {{ number_format($peminjaman->dendaRecord->total_denda, 0, ',', '.') }}</span>
+                                <br><small class="badge bg-{{ $peminjaman->dendaRecord->status_bayar == 'belum-dibayar' ? 'danger' : 'success' }}">{{ $peminjaman->dendaRecord->status_bayar == 'belum-dibayar' ? 'Belum Lunas' : 'Lunas' }}</small>
                             @else
-                                <span class="text-muted">-</span>
+                                {{-- Menampilkan nilai dari kolom 'denda' jika tidak ada record denda --}}
+                                <span class="text-muted">Rp {{ number_format($peminjaman->denda, 0, ',', '.') }}</span>
                             @endif
                         </div>
                         <div class="mb-3">
@@ -85,4 +87,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
