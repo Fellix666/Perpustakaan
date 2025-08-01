@@ -20,7 +20,6 @@
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
         <i class="fas fa-file-import me-2"></i>Import Excel
     </button>
-    {{-- TOMBOL BARU UNTUK UPLOAD FOTO ZIP --}}
     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
         <i class="fas fa-file-archive me-2"></i>Upload Foto ZIP
     </button>
@@ -88,7 +87,33 @@
 @endsection
 
 @section('content')
-{{-- Seluruh bagian @section('content') Anda tetap sama, tidak perlu diubah. --}}
+
+{{-- ================================================================= --}}
+{{-- <<<--- KODE PENAMPIL PESAN DITAMBAHKAN DI SINI ---<<< --}}
+{{-- ================================================================= --}}
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if (session('warning'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ session('warning') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+{{-- ================================================================= --}}
+
 <div class="card mb-3">
     <div class="card-body">
         <form method="GET" action="{{ route('anggota.index') }}" class="row g-2 align-items-end">
@@ -236,7 +261,6 @@
 @endsection
 
 @section('scripts')
-{{-- Seluruh bagian @section('scripts') Anda tetap sama, tidak perlu diubah. --}}
 <script>
 function confirmDelete(event) {
     event.preventDefault();

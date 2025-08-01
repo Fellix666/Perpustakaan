@@ -6,8 +6,10 @@ use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Rak;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // <-- Pastikan ini ada
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use ZipArchive; // <-- Pastikan ini ada
 
 class BukuController extends Controller
 {
@@ -23,27 +25,16 @@ class BukuController extends Controller
                     ->orWhere('penerbit', 'like', "%$q%");
             });
         }
-        // Filter kategori
-        if ($request->filled('kategori_id')) {
-            $query->where('kategori_id', $request->kategori_id);
-        }
-        // Filter rak
-        if ($request->filled('rak_id')) {
-            $query->where('rak_id', $request->rak_id);
-        }
-        // Filter status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        // Filter tahun terbit
-        if ($request->filled('tahun_terbit')) {
-            $query->where('tahun_terbit', $request->tahun_terbit);
-        }
+        if ($request->filled('kategori_id')) { $query->where('kategori_id', $request->kategori_id); }
+        if ($request->filled('rak_id')) { $query->where('rak_id', $request->rak_id); }
+        if ($request->filled('status')) { $query->where('status', $request->status); }
+        if ($request->filled('tahun_terbit')) { $query->where('tahun_terbit', $request->tahun_terbit); }
+        
         $bukus = $query->paginate(10)->withQueryString();
-        // Data untuk filter dropdown
-        $kategoris = \App\Models\Kategori::orderBy('nama_kategori')->get();
-        $raks = \App\Models\Rak::orderBy('nama_rak')->get();
-        $tahunTerbitList = \App\Models\Buku::select('tahun_terbit')->distinct()->orderBy('tahun_terbit', 'desc')->pluck('tahun_terbit');
+        $kategoris = Kategori::orderBy('nama_kategori')->get();
+        $raks = Rak::orderBy('nama_rak')->get();
+        $tahunTerbitList = Buku::select('tahun_terbit')->distinct()->orderBy('tahun_terbit', 'desc')->pluck('tahun_terbit');
+        
         return view('buku.index', compact('bukus', 'kategoris', 'raks', 'tahunTerbitList'));
     }
 
@@ -57,6 +48,9 @@ class BukuController extends Controller
         return view('buku.create', compact('kategoris', 'raks'));
     }
 
+    /**
+     * PERBAIKAN: Menyeragamkan cara menyimpan file cover.
+     */
     public function store(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -78,17 +72,17 @@ class BukuController extends Controller
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('cover');
+        $data['stok_tersedia'] = $request->stok_total;
+
         if ($request->hasFile('cover')) {
             $file = $request->file('cover');
-            $filename = uniqid('buku_').'.'.$file->getClientOriginalExtension();
-            $file->storeAs('public/buku', $filename);
+            $filename = uniqid('buku_') . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('buku', $filename, 'public'); // Simpan ke public/buku
             $data['cover'] = $filename;
         }
-        $data['stok_tersedia'] = $data['stok_total'];
 
         Buku::create($data);
-
         return redirect()->route('buku.index')->with('success', 'Buku berhasil ditambahkan');
     }
 
@@ -108,6 +102,9 @@ class BukuController extends Controller
         return view('buku.edit', compact('buku', 'kategoris', 'raks'));
     }
 
+    /**
+     * PERBAIKAN: Menyeragamkan cara menyimpan file cover dan menghapus yang lama.
+     */
     public function update(Request $request, Buku $buku)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -129,33 +126,40 @@ class BukuController extends Controller
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('cover');
+
         if ($request->hasFile('cover')) {
+            // Hapus cover lama jika ada
+            if ($buku->cover && Storage::disk('public')->exists('buku/' . $buku->cover)) {
+                Storage::disk('public')->delete('buku/' . $buku->cover);
+            }
             $file = $request->file('cover');
-            $filename = uniqid('buku_').'.'.$file->getClientOriginalExtension();
-            $file->storeAs('public/buku', $filename);
+            $filename = uniqid('buku_') . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('buku', $filename, 'public');
             $data['cover'] = $filename;
-        } else {
-            unset($data['cover']);
         }
         
         // Update stok tersedia jika stok total berubah
-        if ($data['stok_total'] != $buku->stok_total) {
-            $selisih = $data['stok_total'] - $buku->stok_total;
-            $data['stok_tersedia'] = $buku->stok_tersedia + $selisih;
-            $data['stok_tersedia'] = max(0, $data['stok_tersedia']);
+        if ($request->stok_total != $buku->stok_total) {
+            $selisih = $request->stok_total - $buku->stok_total;
+            $data['stok_tersedia'] = max(0, $buku->stok_tersedia + $selisih);
         }
 
         $buku->update($data);
-        $buku->updateStok();
-
         return redirect()->route('buku.index')->with('success', 'Buku berhasil diperbarui');
     }
 
+    /**
+     * PERBAIKAN: Menambahkan logika untuk menghapus file cover.
+     */
     public function destroy(Buku $buku)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
+        }
+        // Hapus cover jika ada
+        if ($buku->cover && Storage::disk('public')->exists('buku/' . $buku->cover)) {
+            Storage::disk('public')->delete('buku/' . $buku->cover);
         }
         $buku->delete();
         return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus');
@@ -270,5 +274,65 @@ class BukuController extends Controller
         } else {
             return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', $errors));
         }
+    }
+    public function prosesUploadCoverZip(Request $request)
+    {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        $request->validate([
+            'zip_file' => 'required|file|mimetypes:application/zip,application/x-zip-compressed|max:20480',
+        ]);
+
+        $zip = new ZipArchive;
+        $file = $request->file('zip_file');
+        if ($zip->open($file->getRealPath()) !== TRUE) {
+            return back()->with('error', 'Gagal membuka file ZIP.');
+        }
+
+        $berhasil = 0;
+        $gagal = 0;
+        $logGagal = [];
+        $semuaBuku = Buku::all()->keyBy('kode_buku');
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $fileName = $zip->getNameIndex($i);
+            $fileInfo = pathinfo($fileName);
+
+            if (substr($fileName, -1) == '/' || str_starts_with(basename($fileName), '._') || str_contains($fileName, '__MACOSX')) {
+                continue;
+            }
+
+            $kodeBukuDariFile = trim($fileInfo['filename']);
+
+            if ($semuaBuku->has($kodeBukuDariFile)) {
+                $buku = $semuaBuku->get($kodeBukuDariFile);
+
+                if ($buku->cover && Storage::disk('public')->exists('buku/' . $buku->cover)) {
+                    Storage::disk('public')->delete('buku/' . $buku->cover);
+                }
+
+                $newFileName = uniqid('buku_') . '.' . $fileInfo['extension'];
+                $fileContent = $zip->getFromIndex($i);
+                Storage::disk('public')->put('buku/' . $newFileName, $fileContent);
+                
+                $buku->cover = $newFileName;
+                $buku->save();
+                $berhasil++;
+            } else {
+                $gagal++;
+                $logGagal[] = basename($fileName);
+            }
+        }
+        $zip->close();
+
+        $pesan = "$berhasil cover buku berhasil diupdate.";
+        if ($gagal > 0) {
+            $pesanGagal = " $gagal cover gagal diproses karena kode buku tidak ditemukan: " . implode(', ', $logGagal);
+            $status = ($berhasil > 0) ? 'warning' : 'error';
+            return back()->with($status, $pesan . $pesanGagal);
+        }
+
+        return redirect()->route('buku.index')->with('success', $pesan);
     }
 }

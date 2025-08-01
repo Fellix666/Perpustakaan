@@ -55,6 +55,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::delete('buku/{buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
     Route::get('buku/export/csv', [BukuController::class, 'export'])->name('buku.export');
     Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
+    Route::post('buku/upload-cover-zip', [BukuController::class, 'prosesUploadCoverZip'])->name('buku.proses-upload-cover');
 
     // --- Manajemen Kategori ---
     Route::get('kategori', [KategoriController::class, 'index'])->name('kategori.index');

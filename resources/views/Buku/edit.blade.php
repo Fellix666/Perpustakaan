@@ -17,7 +17,7 @@
                 <h5 class="mb-0"><i class="fas fa-book-edit me-2"></i>Form Edit Buku</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('buku.update', $buku) }}" method="POST" id="formBuku">
+                <form action="{{ route('buku.update', $buku) }}" method="POST" id="formBuku" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="mb-3">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Data Buku - Nama Aplikasi')
+@section('title', 'Data Buku')
 @section('page-title', 'Data Buku')
 
 @section('breadcrumb')
@@ -9,49 +9,42 @@
 @endsection
 
 @section('page-actions')
-<div class="d-flex gap-2">
+<div class="d-flex flex-wrap gap-2">
     @if(auth('admin')->user()->role === 'admin')
-    <a href="{{ route('buku.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Tambah Buku
-    </a>
-    <a href="/template/template_import_buku.xlsx" class="btn btn-outline-info" target="_blank">
-        <i class="fas fa-download me-2"></i>Download Template Excel
-    </a>
-    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-        <i class="fas fa-file-import me-2"></i>Import Excel
-    </button>
+    <a href="{{ route('buku.create') }}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Tambah Buku</a>
+    <a href="/template/template_import_buku.xlsx" class="btn btn-outline-success" target="_blank"><i class="fas fa-download me-2"></i>Template Excel</a>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-file-import me-2"></i>Import Excel</button>
+    {{-- TOMBOL BARU --}}
+    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadCoverModal"><i class="fas fa-file-archive me-2"></i>Upload Cover ZIP</button>
     @endif
 </div>
 
 <!-- Modal Import Excel Buku -->
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+<div class="modal fade" id="importModal" tabindex="-1">...</div>
+
+<!-- MODAL BARU: Upload Cover ZIP -->
+<div class="modal fade" id="uploadCoverModal" tabindex="-1" aria-labelledby="uploadCoverModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="{{ route('buku.import') }}" method="POST" enctype="multipart/form-data">
+      <form action="{{ route('buku.proses-upload-cover') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <div class="modal-header">
-          <h5 class="modal-title" id="importModalLabel">Import Data Buku dari Excel</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+        <div class="modal-header"><h5 class="modal-title" id="uploadCoverModalLabel">Upload Cover Buku Massal</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
-          </div>
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            Download template: <a href="/template/template_import_buku.xlsx" target="_blank">Excel</a>
-          </div>
+            <div class="alert alert-info"><p class="fw-bold">Petunjuk:</p><ol class="mb-0"><li>Ubah nama setiap cover agar sama persis dengan <strong>Kode Buku</strong> (Contoh: <strong>BKU001.jpg</strong>).</li><li>Masukkan semua cover ke dalam satu file <strong>.zip</strong>.</li></ol></div>
+            <div class="mb-3"><label for="zip_file" class="form-label">Pilih File ZIP</label><input type="file" class="form-control" name="zip_file" id="zip_file" accept=".zip" required></div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Import</button>
-        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Upload & Proses</button></div>
       </form>
     </div>
   </div>
 </div>
 @endsection
+
+@section('content')
+{{-- Kode untuk menampilkan notifikasi --}}
+@if (session('success'))<div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+@if (session('error'))<div class="alert alert-danger alert-dismissible fade show" role="alert">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+@if (session('warning'))<div class="alert alert-warning alert-dismissible fade show" role="alert">{{ session('warning') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
 
 @section('content')
 <div class="card mb-3">

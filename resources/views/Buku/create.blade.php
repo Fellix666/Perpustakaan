@@ -17,7 +17,7 @@
                 <h5 class="mb-0"><i class="fas fa-book-medical me-2"></i>Form Tambah Buku Baru</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('buku.store') }}" method="POST" id="formBuku">
+                <form action="{{ route('buku.store') }}" method="POST" id="formBuku" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label for="kode_buku" class="form-label">Kode Buku <span class="text-danger">*</span></label>
