@@ -17,14 +17,14 @@
                 <h5 class="mb-0"><i class="fas fa-book me-2"></i>Navigasi Laporan</h5>
             </div>
             <div class="list-group list-group-flush">
-                <a href="{{ route('laporan.data-master') }}" class="list-group-item list-group-item-action">
-                    <i class="fas fa-users me-2 text-primary"></i> Laporan Data Master
-                </a>
                 <a href="{{ route('laporan.transaksi') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-exchange-alt me-2 text-success"></i> Laporan Transaksi
                 </a>
-                <a href="{{ route('laporan.semua') }}" class="list-group-item list-group-item-action">
-                    <i class="fas fa-print me-2 text-info"></i> Cetak Semua Laporan
+                <a href="{{ route('laporan.denda') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i> Laporan Denda & Keterlambatan
+                </a>
+                <a href="{{ route('laporan.analisis-peminjaman') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-line me-2 text-success"></i> Analisis Peminjaman
                 </a>
             </div>
         </div>

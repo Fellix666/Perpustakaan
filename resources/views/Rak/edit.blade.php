@@ -19,7 +19,7 @@
             <div class="card-body">
                 <form action="{{ route('rak.update', $rak) }}" method="POST" id="formRak">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
                     <div class="mb-3">
                         <label for="kode_rak" class="form-label">Kode Rak <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('kode_rak') is-invalid @enderror" id="kode_rak" name="kode_rak" value="{{ old('kode_rak', $rak->kode_rak) }}" placeholder="Contoh: RK001">

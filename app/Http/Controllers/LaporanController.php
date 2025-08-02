@@ -10,6 +10,7 @@ use App\Models\Peminjaman;
 use App\Models\Denda;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class LaporanController extends Controller
 {
@@ -44,171 +45,748 @@ class LaporanController extends Controller
         ));
     }
 
-    public function dataMaster(Request $request)
-    {
-        $type = $request->get('type', 'anggota');
-        $data = [];
-        
-        switch($type) {
-            case 'anggota':
-                $data = Anggota::orderBy('nama_lengkap')->get();
-                break;
-            case 'buku':
-                $data = Buku::with(['kategori', 'rak'])->orderBy('judul')->get();
-                break;
-            case 'kategori':
-                $data = Kategori::withCount('bukus')->orderBy('nama_kategori')->get();
-                break;
-            case 'rak':
-                $data = Rak::withCount('bukus')->orderBy('nomor_rak')->get();
-                break;
-        }
-        
-        return view('laporan.data-master', compact('data', 'type'));
-    }
+
 
     public function transaksi(Request $request)
     {
-        $type = $request->get('type', 'peminjaman');
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        // Hanya izinkan laporan peminjaman
+        $type = 'peminjaman';
         
-        $data = [];
+        // Dapatkan tahun ajaran yang tersedia (yang sudah ada datanya)
+        $availableYears = $this->getAvailableAcademicYears();
         
-        switch($type) {
-            case 'peminjaman':
-                $data = Peminjaman::with(['anggota', 'buku'])
-                          ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-                          ->orderBy('tanggal_pinjam', 'desc')
-                          ->get();
-                break;
-            case 'pengembalian':
-                $data = Peminjaman::with(['anggota', 'buku'])
-                          ->where('status', 'dikembalikan')
-                          ->whereBetween('tanggal_kembali_aktual', [$startDate, $endDate])
-                          ->orderBy('tanggal_kembali_aktual', 'desc')
-                          ->get();
-                break;
-            case 'denda':
-                $data = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
-                        ->whereBetween('created_at', [$startDate, $endDate])
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                break;
+        // Set tahun ajaran default ke tahun terbaru yang tersedia
+        $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+        $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+        
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            // Jika format "2023/2024", ambil tahun pertama
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
         }
         
-        return view('laporan.transaksi', compact('data', 'type', 'startDate', 'endDate'));
-    }
-
-    public function semuaData(Request $request)
-    {
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        $data = [];
+        $summaryData = [];
+        $dendaData = [];
         
-        // Data Master
-        $anggota = Anggota::orderBy('nama_lengkap')->get();
-        $buku = Buku::with(['kategori', 'rak'])->orderBy('judul')->get();
-        $kategori = Kategori::withCount('bukus')->orderBy('nama_kategori')->get();
-        $rak = Rak::withCount('bukus')->orderBy('nomor_rak')->get();
+        // Tentukan periode tahun ajaran (Juli - Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
         
-        // Data Transaksi
-        $peminjaman = Peminjaman::with(['anggota', 'buku'])
-                        ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-                        ->orderBy('tanggal_pinjam', 'desc')
-                        ->get();
+        // Hanya laporan peminjaman
+        $data = Peminjaman::with(['anggota', 'buku'])
+                  ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                  ->orderBy('tanggal_pinjam', 'desc')
+                  ->get();
         
-        $denda = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
-                      ->whereBetween('created_at', [$startDate, $endDate])
-                      ->orderBy('created_at', 'desc')
-                      ->get();
+        // Data summary per kelas
+        $summaryData = $this->getPeminjamanSummary($startDate, $endDate);
         
-        return view('laporan.semua', compact(
-            'anggota', 'buku', 'kategori', 'rak', 
-            'peminjaman', 'denda', 'startDate', 'endDate'
+        // Data denda untuk pengumuman
+        $dendaData = $this->getDendaData();
+        
+        return view('laporan.transaksi', compact(
+            'data', 'tahunAjaran', 'summaryData', 'dendaData', 
+            'startDate', 'endDate', 'availableYears'
         ));
     }
 
-    public function printDataMaster(Request $request)
+    /**
+     * Mendapatkan summary peminjaman per kelas dan bulan
+     */
+    private function getPeminjamanSummary($startDate, $endDate)
     {
-        $type = $request->get('type', 'anggota');
-        $data = [];
+        $summary = [];
         
-        switch($type) {
-            case 'anggota':
-                $data = Anggota::orderBy('nama_lengkap')->get();
-                break;
-            case 'buku':
-                $data = Buku::with(['kategori', 'rak'])->orderBy('judul')->get();
-                break;
-            case 'kategori':
-                $data = Kategori::withCount('bukus')->orderBy('nama_kategori')->get();
-                break;
-            case 'rak':
-                $data = Rak::withCount('bukus')->orderBy('nomor_rak')->get();
-                break;
+        // Ambil data peminjaman per kelas per bulan
+        $peminjamanData = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+            ->select(
+                'anggotas.kelas',
+                DB::raw('MONTH(peminjamans.tanggal_pinjam) as bulan'),
+                DB::raw('YEAR(peminjamans.tanggal_pinjam) as tahun'),
+                DB::raw('COUNT(*) as total_peminjaman')
+            )
+            ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('anggotas.kelas', 'bulan', 'tahun')
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->orderBy('anggotas.kelas')
+            ->get();
+        
+        // Buat struktur data lengkap untuk semua bulan (Juli-Juni)
+        $startYear = (int) date('Y', strtotime($startDate));
+        $endYear = (int) date('Y', strtotime($endDate));
+        
+        // Daftar semua bulan dalam tahun ajaran (Juli-Juni)
+        $bulanList = [
+            7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec',
+            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun'
+        ];
+        
+        // Inisialisasi semua bulan dengan data kosong
+        foreach ($bulanList as $bulan => $namaBulan) {
+            $tahun = ($bulan >= 7) ? $startYear : $endYear;
+            $bulanKey = $tahun . '-' . str_pad($bulan, 2, '0', STR_PAD_LEFT);
+            
+            $summary[$bulanKey] = [
+                'bulan' => $namaBulan . ' ' . $tahun,
+                'kelas' => [
+                    'VII A' => 0, 'VII B' => 0, 'VII C' => 0, 'VII D' => 0, 'VII E' => 0,
+                    'VIII A' => 0, 'VIII B' => 0, 'VIII C' => 0, 'VIII D' => 0,
+                    'IX A' => 0, 'IX B' => 0, 'IX C' => 0, 'IX D' => 0, 'IX E' => 0
+                ]
+            ];
         }
         
-        return view('laporan.print.data-master', compact('data', 'type'));
+        // Isi data yang ada
+        foreach ($peminjamanData as $item) {
+            $bulanKey = $item->tahun . '-' . str_pad($item->bulan, 2, '0', STR_PAD_LEFT);
+            if (isset($summary[$bulanKey])) {
+                $summary[$bulanKey]['kelas'][$item->kelas] = $item->total_peminjaman;
+            }
+        }
+        
+        return collect($summary);
     }
+
+    /**
+     * Mendapatkan tahun ajaran yang tersedia berdasarkan data peminjaman
+     */
+    public function getAvailableAcademicYears()
+    {
+        // Ambil semua data peminjaman dengan tahun dan bulan
+        $peminjamanData = Peminjaman::selectRaw('YEAR(tanggal_pinjam) as tahun, MONTH(tanggal_pinjam) as bulan')
+            ->distinct()
+            ->get();
+            
+        // Ambil semua data denda dengan tahun dan bulan
+        $dendaData = Denda::selectRaw('YEAR(created_at) as tahun, MONTH(created_at) as bulan')
+            ->distinct()
+            ->get();
+        
+        // Buat daftar tahun ajaran berdasarkan data yang ada
+        $academicYears = collect();
+        
+        // Proses data peminjaman
+        foreach ($peminjamanData as $item) {
+            $year = $item->tahun;
+            $month = $item->bulan;
+            
+            // Jika bulan Januari-Juni, tahun ajaran adalah (tahun-1)/(tahun)
+            // Jika bulan Juli-Desember, tahun ajaran adalah (tahun)/(tahun+1)
+            if ($month >= 1 && $month <= 6) {
+                $academicYear = $year - 1; // Tahun ajaran dimulai tahun sebelumnya
+            } else {
+                $academicYear = $year; // Tahun ajaran dimulai tahun ini
+            }
+            
+            if (!$academicYears->contains($academicYear)) {
+                $academicYears->push($academicYear);
+            }
+        }
+        
+        // Proses data denda
+        foreach ($dendaData as $item) {
+            $year = $item->tahun;
+            $month = $item->bulan;
+            
+            if ($month >= 1 && $month <= 6) {
+                $academicYear = $year - 1;
+            } else {
+                $academicYear = $year;
+            }
+            
+            if (!$academicYears->contains($academicYear)) {
+                $academicYears->push($academicYear);
+            }
+        }
+        
+        // Jika tidak ada data, gunakan tahun saat ini
+        if ($academicYears->isEmpty()) {
+            $academicYears = collect([Carbon::now()->year]);
+        }
+        
+        return $academicYears->sort()->reverse();
+    }
+
+    /**
+     * Mendapatkan data denda untuk pengumuman
+     */
+    private function getDendaData()
+    {
+        // Data denda yang belum dibayar
+        $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+            ->where('status_bayar', 'belum-dibayar')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Data peminjaman terlambat (konsisten dengan status_realtime)
+        $peminjamanTerlambat = Peminjaman::with(['anggota', 'buku'])
+            ->where('status', 'dipinjam')
+            ->whereNull('tanggal_kembali_aktual')
+            ->where(function($query) {
+                $query->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay()) // Toleransi 1 hari seperti status_realtime
+                      ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30)); // Hanya data non-historis
+            })
+            ->orderBy('tanggal_kembali_rencana', 'asc')
+            ->get();
+        
+        // Hitung total denda
+        $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+        $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
+            $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+            return max(0, $hariTerlambat) * 1000; // Denda per hari Rp 1.000, minimal 0
+        });
+        
+        return [
+            'dendaBelumBayar' => $dendaBelumBayar,
+            'peminjamanTerlambat' => $peminjamanTerlambat,
+            'totalDendaBelumBayar' => $totalDendaBelumBayar,
+            'totalDendaTerlambat' => $totalDendaTerlambat
+        ];
+    }
+
+    /**
+     * Laporan denda dan keterlambatan dengan filter sederhana
+     */
+    public function laporanDenda(Request $request)
+    {
+        $jenisLaporan = $request->get('jenis_laporan', 'pengumuman'); // pengumuman, tahunan
+        
+        if ($jenisLaporan == 'pengumuman') {
+            // Laporan pengumuman (bulanan)
+            $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+            
+            // Data denda belum dibayar
+            $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'belum-dibayar')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            $dendaSudahBayar = collect(); // Kosong untuk pengumuman
+            
+            // Data peminjaman terlambat (sedang berlangsung)
+            $peminjamanTerlambat = Peminjaman::with(['anggota', 'buku'])
+                ->where('status', 'dipinjam')
+                ->whereNull('tanggal_kembali_aktual')
+                ->where(function($query) {
+                    $query->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
+                          ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30));
+                })
+                ->orderBy('tanggal_kembali_rencana', 'asc')
+                ->get();
+            
+            // Hitung total denda
+            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+            $totalDendaSudahBayar = 0;
+            $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
+                $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+                return max(0, $hariTerlambat) * 1000;
+            });
+            
+            $summaryData = collect();
+            $tahunAjaran = null;
+            $availableYears = $this->getAvailableAcademicYears();
+            
+        } else {
+            // Laporan tahunan
+            $availableYears = $this->getAvailableAcademicYears();
+            $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+            $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+            
+            // Pastikan tahun ajaran adalah integer
+            if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+                $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+            } else {
+                $tahunAjaran = (int) $tahunAjaran;
+            }
+            
+            // Tentukan periode tahun ajaran (Juli - Juni)
+            $startDate = $tahunAjaran . '-07-01';
+            $endDate = ($tahunAjaran + 1) . '-06-30';
+            
+            // Data denda yang sudah dibayar pertahun
+            $dendaSudahBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'dibayar')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Data denda yang belum dibayar pertahun
+            $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'belum-dibayar')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Data peminjaman terlambat (kosong untuk laporan tahunan)
+            $peminjamanTerlambat = collect();
+            
+            // Hitung total
+            $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
+            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+            $totalDendaTerlambat = 0;
+            
+            // Summary per bulan
+            $summaryData = $this->getDendaSummary($startDate, $endDate);
+        }
+        
+        return view('laporan.denda', compact(
+            'dendaBelumBayar', 
+            'dendaSudahBayar',
+            'peminjamanTerlambat', 
+            'totalDendaBelumBayar', 
+            'totalDendaSudahBayar',
+            'totalDendaTerlambat',
+            'startDate', 
+            'endDate',
+            'jenisLaporan',
+            'summaryData',
+            'tahunAjaran',
+            'availableYears'
+        ));
+    }
+
+    /**
+     * Print laporan denda dan keterlambatan (untuk pengumuman)
+     */
+    public function printDenda(Request $request)
+    {
+        $jenisLaporan = $request->get('jenis_laporan', 'pengumuman');
+        
+        if ($jenisLaporan == 'pengumuman') {
+            // Print pengumuman (bulanan)
+            $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+            
+            // Data denda belum dibayar
+            $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'belum-dibayar')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
+                
+            $dendaSudahBayar = collect(); // Kosong untuk pengumuman
+            
+            // Data peminjaman terlambat
+            $peminjamanTerlambat = Peminjaman::with(['anggota', 'buku'])
+                ->where('status', 'dipinjam')
+                ->whereNull('tanggal_kembali_aktual')
+                ->where(function($query) {
+                    $query->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
+                          ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30));
+                })
+                ->orderBy('tanggal_kembali_rencana', 'asc')
+                ->get();
+            
+            // Hitung total denda
+            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+            $totalDendaSudahBayar = 0;
+            $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
+                $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+                return max(0, $hariTerlambat) * 1000;
+            });
+            
+            $summaryData = collect();
+            $tahunAjaran = null;
+            
+        } else {
+            // Print laporan tahunan
+            $tahunAjaran = $request->get('tahun_ajaran', Carbon::now()->format('Y'));
+            
+            // Pastikan tahun ajaran adalah integer
+            if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+                $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+            } else {
+                $tahunAjaran = (int) $tahunAjaran;
+            }
+            
+            // Tentukan periode tahun ajaran (Juli - Juni)
+            $startDate = $tahunAjaran . '-07-01';
+            $endDate = ($tahunAjaran + 1) . '-06-30';
+            
+            // Data denda yang sudah dibayar pertahun
+            $dendaSudahBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'dibayar')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                          ->get();
+            
+            // Data denda yang belum dibayar pertahun
+            $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
+                ->where('status_bayar', 'belum-dibayar')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+            
+            // Data peminjaman terlambat (kosong untuk laporan tahunan)
+            $peminjamanTerlambat = collect();
+            
+            // Hitung total
+            $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
+            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+            $totalDendaTerlambat = 0;
+            
+            // Summary per bulan
+            $summaryData = $this->getDendaSummary($startDate, $endDate);
+        }
+        
+        return view('laporan.print.denda', compact(
+            'dendaBelumBayar', 
+            'dendaSudahBayar',
+            'peminjamanTerlambat', 
+            'totalDendaBelumBayar', 
+            'totalDendaSudahBayar',
+            'totalDendaTerlambat',
+            'startDate', 
+            'endDate',
+            'jenisLaporan',
+            'summaryData',
+            'tahunAjaran'
+        ));
+    }
+
+
+
+    /**
+     * Mendapatkan summary denda per bulan
+     */
+    private function getDendaSummary($startDate, $endDate)
+    {
+        $summary = [];
+        
+        // Ambil data denda per bulan
+        $dendaData = Denda::select(
+                DB::raw('MONTH(created_at) as bulan'),
+                DB::raw('YEAR(created_at) as tahun'),
+                DB::raw('status_bayar'),
+                DB::raw('COUNT(*) as total_transaksi'),
+                DB::raw('SUM(total_denda) as total_nominal')
+            )
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('bulan', 'tahun', 'status_bayar')
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->get();
+        
+        // Format data untuk view
+        foreach ($dendaData as $item) {
+            $bulanKey = $item->tahun . '-' . str_pad($item->bulan, 2, '0', STR_PAD_LEFT);
+            if (!isset($summary[$bulanKey])) {
+                $summary[$bulanKey] = [
+                    'bulan' => Carbon::createFromDate($item->tahun, $item->bulan, 1)->format('M Y'),
+                    'sudah_dibayar' => ['transaksi' => 0, 'nominal' => 0],
+                    'belum_dibayar' => ['transaksi' => 0, 'nominal' => 0]
+                ];
+            }
+            
+            if ($item->status_bayar == 'dibayar') {
+                $summary[$bulanKey]['sudah_dibayar']['transaksi'] = $item->total_transaksi;
+                $summary[$bulanKey]['sudah_dibayar']['nominal'] = $item->total_nominal;
+            } else {
+                $summary[$bulanKey]['belum_dibayar']['transaksi'] = $item->total_transaksi;
+                $summary[$bulanKey]['belum_dibayar']['nominal'] = $item->total_nominal;
+            }
+        }
+        
+        return collect($summary);
+    }
+
+    /**
+     * Mendapatkan data top peminjam untuk program hadiah
+     */
+    private function getTopPeminjam($startDate, $endDate)
+    {
+        // Top 10 siswa dengan peminjaman terbanyak
+        $topPeminjam = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+            ->select(
+                'anggotas.id',
+                'anggotas.nomor_anggota',
+                'anggotas.nama_lengkap',
+                'anggotas.kelas',
+                DB::raw('COUNT(*) as total_peminjaman')
+            )
+            ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('anggotas.id', 'anggotas.nomor_anggota', 'anggotas.nama_lengkap', 'anggotas.kelas')
+            ->orderBy('total_peminjaman', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Top 3 per kelas
+        $topPerKelas = [];
+        $kelasList = ['VII A', 'VII B', 'VII C', 'VII D', 'VII E', 'VIII A', 'VIII B', 'VIII C', 'VIII D', 'IX A', 'IX B', 'IX C', 'IX D', 'IX E'];
+        
+        foreach ($kelasList as $kelas) {
+            $topKelas = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+                ->select(
+                    'anggotas.id',
+                    'anggotas.nomor_anggota',
+                    'anggotas.nama_lengkap',
+                    'anggotas.kelas',
+                    DB::raw('COUNT(*) as total_peminjaman')
+                )
+                ->where('anggotas.kelas', $kelas)
+                ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+                ->groupBy('anggotas.id', 'anggotas.nomor_anggota', 'anggotas.nama_lengkap', 'anggotas.kelas')
+                ->orderBy('total_peminjaman', 'desc')
+                ->limit(3)
+                ->get();
+            
+            if ($topKelas->count() > 0) {
+                $topPerKelas[$kelas] = $topKelas;
+            }
+        }
+
+        // Top 5 per bulan
+        $topPerBulan = [];
+        for ($month = 7; $month <= 12; $month++) {
+            $year = (int) $startDate;
+            $bulanKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+            
+            $topBulan = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+                ->select(
+                    'anggotas.id',
+                    'anggotas.nomor_anggota',
+                    'anggotas.nama_lengkap',
+                    'anggotas.kelas',
+                    DB::raw('COUNT(*) as total_peminjaman')
+                )
+                ->whereMonth('peminjamans.tanggal_pinjam', $month)
+                ->whereYear('peminjamans.tanggal_pinjam', $year)
+                ->groupBy('anggotas.id', 'anggotas.nomor_anggota', 'anggotas.nama_lengkap', 'anggotas.kelas')
+                ->orderBy('total_peminjaman', 'desc')
+                ->limit(5)
+                ->get();
+            
+            if ($topBulan->count() > 0) {
+                $topPerBulan[$bulanKey] = [
+                    'bulan' => Carbon::createFromDate($year, $month, 1)->format('M Y'),
+                    'data' => $topBulan
+                ];
+            }
+        }
+        
+        // Semester 2 (Jan-Jun tahun berikutnya)
+        for ($month = 1; $month <= 6; $month++) {
+            $year = (int) $startDate + 1;
+            $bulanKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+            
+            $topBulan = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+                ->select(
+                    'anggotas.id',
+                    'anggotas.nomor_anggota',
+                    'anggotas.nama_lengkap',
+                    'anggotas.kelas',
+                    DB::raw('COUNT(*) as total_peminjaman')
+                )
+                ->whereMonth('peminjamans.tanggal_pinjam', $month)
+                ->whereYear('peminjamans.tanggal_pinjam', $year)
+                ->groupBy('anggotas.id', 'anggotas.nomor_anggota', 'anggotas.nama_lengkap', 'anggotas.kelas')
+                ->orderBy('total_peminjaman', 'desc')
+                ->limit(5)
+                ->get();
+            
+            if ($topBulan->count() > 0) {
+                $topPerBulan[$bulanKey] = [
+                    'bulan' => Carbon::createFromDate($year, $month, 1)->format('M Y'),
+                    'data' => $topBulan
+                ];
+            }
+        }
+
+        return [
+            'topPeminjam' => $topPeminjam,
+            'topPerKelas' => $topPerKelas,
+            'topPerBulan' => $topPerBulan
+        ];
+    }
+
+    /**
+     * Mendapatkan statistik peminjaman
+     */
+    private function getStatistikPeminjaman($startDate, $endDate)
+    {
+        // Total peminjaman
+        $totalPeminjaman = Peminjaman::whereBetween('tanggal_pinjam', [$startDate, $endDate])->count();
+        
+        // Rata-rata peminjaman per bulan
+        $bulanCount = 12; // Juli-Juni
+        $rataRataPerBulan = $totalPeminjaman > 0 ? round($totalPeminjaman / $bulanCount) : 0;
+        
+        // Kelas dengan peminjaman tertinggi
+        $kelasTertinggi = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+            ->select('anggotas.kelas', DB::raw('COUNT(*) as total'))
+            ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('anggotas.kelas')
+            ->orderBy('total', 'desc')
+            ->first();
+        
+        // Bulan dengan peminjaman tertinggi
+        $bulanTertinggi = Peminjaman::select(
+                DB::raw('MONTH(tanggal_pinjam) as bulan'),
+                DB::raw('YEAR(tanggal_pinjam) as tahun'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('bulan', 'tahun')
+            ->orderBy('total', 'desc')
+            ->first();
+        
+        // Persentase per tingkat
+        $persentaseTingkat = [];
+        $tingkatList = ['VII', 'VIII', 'IX'];
+        
+        foreach ($tingkatList as $tingkat) {
+            $totalTingkat = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+                ->where('anggotas.kelas', 'like', $tingkat . '%')
+                ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+                ->count();
+            
+            $persentase = $totalPeminjaman > 0 ? round(($totalTingkat / $totalPeminjaman) * 100, 1) : 0;
+            $persentaseTingkat[$tingkat] = [
+                'total' => $totalTingkat,
+                'persentase' => $persentase
+            ];
+        }
+        
+        // Kategori buku favorit
+        $kategoriFavorit = Peminjaman::join('bukus', 'peminjamans.buku_id', '=', 'bukus.id')
+            ->join('kategoris', 'bukus.kategori_id', '=', 'kategoris.id')
+            ->select('kategoris.nama_kategori', DB::raw('COUNT(*) as total'))
+            ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('kategoris.id', 'kategoris.nama_kategori')
+            ->orderBy('total', 'desc')
+            ->limit(5)
+            ->get();
+        
+        // Anggota dengan peminjaman terbanyak
+        $anggotaTerbanyak = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+            ->select(
+                'anggotas.nama_lengkap',
+                'anggotas.kelas',
+                DB::raw('COUNT(*) as total_peminjaman')
+            )
+            ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
+            ->groupBy('anggotas.id', 'anggotas.nama_lengkap', 'anggotas.kelas')
+            ->orderBy('total_peminjaman', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return [
+            'totalPeminjaman' => $totalPeminjaman,
+            'rataRataPerBulan' => $rataRataPerBulan,
+            'kelasTertinggi' => $kelasTertinggi,
+            'bulanTertinggi' => $bulanTertinggi,
+            'persentaseTingkat' => $persentaseTingkat,
+            'kategoriFavorit' => $kategoriFavorit,
+            'anggotaTerbanyak' => $anggotaTerbanyak
+        ];
+    }
+
+
+
+
+
+    public function analisisPeminjaman(Request $request)
+    {
+        // Dapatkan tahun ajaran yang tersedia
+        $availableYears = $this->getAvailableAcademicYears();
+        
+        // Set tahun ajaran default ke tahun terbaru yang tersedia
+        $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+        $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+        
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
+        }
+        
+        // Tentukan periode tahun ajaran (Juli-Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
+        
+        // Dapatkan data top peminjam
+        $topPeminjamData = $this->getTopPeminjam($startDate, $endDate);
+        
+        // Dapatkan statistik peminjaman
+        $statistikData = $this->getStatistikPeminjaman($startDate, $endDate);
+        
+        return view('laporan.analisis-peminjaman', compact(
+            'topPeminjamData', 'statistikData', 'tahunAjaran', 'startDate', 'endDate', 'availableYears'
+        ));
+    }
+
+    public function printAnalisisPeminjaman(Request $request)
+    {
+        // Dapatkan tahun ajaran yang tersedia
+        $availableYears = $this->getAvailableAcademicYears();
+        
+        // Set tahun ajaran default ke tahun terbaru yang tersedia
+        $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+        $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+        
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
+        }
+        
+        // Tentukan periode tahun ajaran (Juli-Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
+        
+        // Dapatkan data top peminjam
+        $topPeminjamData = $this->getTopPeminjam($startDate, $endDate);
+        
+        // Dapatkan statistik peminjaman
+        $statistikData = $this->getStatistikPeminjaman($startDate, $endDate);
+        
+        return view('laporan.print.analisis-peminjaman', compact(
+            'topPeminjamData', 'statistikData', 'tahunAjaran', 'startDate', 'endDate'
+        ));
+    }
+
+
+
+
 
     public function printTransaksi(Request $request)
     {
-        $type = $request->get('type', 'peminjaman');
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
+        // Hanya laporan peminjaman
+        $type = 'peminjaman';
         
-        $data = [];
+        $tahunAjaran = $request->get('tahun_ajaran', Carbon::now()->format('Y'));
         
-        switch($type) {
-            case 'peminjaman':
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            // Jika format "2023/2024", ambil tahun pertama
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
+        }
+        
+        // Tentukan periode tahun ajaran (Juli - Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
+        
+        // Hanya laporan peminjaman
                 $data = Peminjaman::with(['anggota', 'buku'])
                           ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
                           ->orderBy('tanggal_pinjam', 'desc')
                           ->get();
-                break;
-            case 'pengembalian':
-                $data = Peminjaman::with(['anggota', 'buku'])
-                          ->where('status', 'dikembalikan')
-                          ->whereBetween('tanggal_kembali_aktual', [$startDate, $endDate])
-                          ->orderBy('tanggal_kembali_aktual', 'desc')
-                          ->get();
-                break;
-            case 'denda':
-                $data = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
-                        ->whereBetween('created_at', [$startDate, $endDate])
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-                break;
-        }
+        $summaryData = $this->getPeminjamanSummary($startDate, $endDate);
         
-        return view('laporan.print.transaksi', compact('data', 'type', 'startDate', 'endDate'));
-    }
-
-    public function printSemua(Request $request)
-    {
-        $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-        
-        // Data Master
-        $anggota = Anggota::orderBy('nama_lengkap')->get();
-        $buku = Buku::with(['kategori', 'rak'])->orderBy('judul')->get();
-        $kategori = Kategori::withCount('bukus')->orderBy('nama_kategori')->get();
-        $rak = Rak::withCount('bukus')->orderBy('nomor_rak')->get();
-        
-        // Data Transaksi
-        $peminjaman = Peminjaman::with(['anggota', 'buku'])
-                        ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-                        ->orderBy('tanggal_pinjam', 'desc')
-                        ->get();
-        
-        $denda = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
-                      ->whereBetween('created_at', [$startDate, $endDate])
-                      ->orderBy('created_at', 'desc')
-                      ->get();
-        
-        return view('laporan.print.semua', compact(
-            'anggota', 'buku', 'kategori', 'rak', 
-            'peminjaman', 'denda', 'startDate', 'endDate'
+        return view('laporan.print.transaksi', compact(
+            'data', 'tahunAjaran', 'summaryData', 'startDate', 'endDate', 'type'
         ));
     }
+
+
 }

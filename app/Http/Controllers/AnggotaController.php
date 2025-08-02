@@ -10,10 +10,22 @@ use ZipArchive;
 
 class AnggotaController extends Controller
 {
-    // ... method index() dan create() Anda tetap sama ...
+    /**
+     * Mendapatkan daftar kelas yang tersedia
+     */
+    private function getKelasList()
+    {
+        return [
+            'VII A', 'VII B', 'VII C', 'VII D', 'VII E',
+            'VIII A', 'VIII B', 'VIII C', 'VIII D',
+            'IX A', 'IX B', 'IX C', 'IX D', 'IX E'
+        ];
+    }
+
     public function index(Request $request)
     {
         $query = Anggota::query();
+        
         if ($request->filled('tahun_daftar')) { $query->whereYear('tanggal_daftar', $request->tahun_daftar); }
         if ($request->filled('kelas')) { $query->where('kelas', $request->kelas); }
         if ($request->filled('status')) { $query->where('status', $request->status); }
@@ -53,7 +65,7 @@ class AnggotaController extends Controller
             'tempat_lahir' => 'required|max:100',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
-            'kelas' => 'required|max:20',
+            'kelas' => 'required|in:' . implode(',', $this->getKelasList()),
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
             'tanggal_daftar' => 'required|date|before_or_equal:today',
@@ -103,7 +115,7 @@ class AnggotaController extends Controller
             'tempat_lahir' => 'required|max:100',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
-            'kelas' => 'required|max:20',
+            'kelas' => 'required|in:' . implode(',', $this->getKelasList()),
             'alamat' => 'required|max:255',
             'telepon' => 'nullable|max:15',
             'tanggal_daftar' => 'required|date|before_or_equal:today',
@@ -148,6 +160,65 @@ class AnggotaController extends Controller
     public function card(Anggota $anggota)
     {
         return view('anggota.card', compact('anggota'));
+    }
+
+    /**
+     * Cetak kartu anggota massal berdasarkan kelas dan tahun ajaran
+     */
+    public function printCards(Request $request)
+    {
+        $kelas = $request->get('kelas');
+        $tahunAjaran = $request->get('tahun_ajaran');
+        
+        $query = Anggota::where('status', 'aktif');
+        
+        // Filter berdasarkan kelas
+        if ($kelas) {
+            $query->where('kelas', $kelas);
+        }
+        
+        // Filter berdasarkan tahun ajaran (tahun daftar)
+        if ($tahunAjaran) {
+            $query->whereYear('tanggal_daftar', $tahunAjaran);
+        }
+        
+        $anggotas = $query->orderBy('kelas')->orderBy('nama_lengkap')->get();
+        
+        // Dapatkan daftar kelas yang tersedia
+        $kelasList = Anggota::select('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
+        
+        // Dapatkan daftar tahun ajaran yang tersedia
+        $tahunAjaranList = Anggota::selectRaw('YEAR(tanggal_daftar) as tahun')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->pluck('tahun');
+        
+        return view('anggota.print-cards', compact('anggotas', 'kelasList', 'tahunAjaranList', 'kelas', 'tahunAjaran'));
+    }
+
+    /**
+     * Cetak kartu anggota massal (print view)
+     */
+    public function printCardsView(Request $request)
+    {
+        $kelas = $request->get('kelas');
+        $tahunAjaran = $request->get('tahun_ajaran');
+        
+        $query = Anggota::where('status', 'aktif');
+        
+        // Filter berdasarkan kelas
+        if ($kelas) {
+            $query->where('kelas', $kelas);
+        }
+        
+        // Filter berdasarkan tahun ajaran (tahun daftar)
+        if ($tahunAjaran) {
+            $query->whereYear('tanggal_daftar', $tahunAjaran);
+        }
+        
+        $anggotas = $query->orderBy('kelas')->orderBy('nama_lengkap')->get();
+        
+        return view('anggota.print-cards-view', compact('anggotas', 'kelas', 'tahunAjaran'));
     }
 
     public function generateNomorAnggota()

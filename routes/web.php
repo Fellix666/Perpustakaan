@@ -34,17 +34,19 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('anggota', [AnggotaController::class, 'index'])->name('anggota.index');
     Route::get('anggota/create', [AnggotaController::class, 'create'])->name('anggota.create');
     Route::post('anggota', [AnggotaController::class, 'store'])->name('anggota.store');
-    Route::get('anggota/{anggota}', [AnggotaController::class, 'show'])->name('anggota.show');
-    Route::get('anggota/{anggota}/edit', [AnggotaController::class, 'edit'])->name('anggota.edit');
-    Route::put('anggota/{anggota}', [AnggotaController::class, 'update'])->name('anggota.update');
-    Route::delete('anggota/{anggota}', [AnggotaController::class, 'destroy'])->name('anggota.destroy');
-    Route::get('anggota/{anggota}/card', [AnggotaController::class, 'card'])->name('anggota.card');
     Route::get('anggota/generate/nomor', [AnggotaController::class, 'generateNomorAnggota'])->name('anggota.generate-nomor');
     Route::get('anggota/search/ajax', [AnggotaController::class, 'search'])->name('anggota.search');
     Route::get('anggota/export/csv', [AnggotaController::class, 'export'])->name('anggota.export');
     Route::post('anggota/import', [AnggotaController::class, 'import'])->name('anggota.import');
     Route::post('anggota/upload-foto-zip', [AnggotaController::class, 'prosesUploadFotoZip'])->name('anggota.proses-upload-foto');
-
+    Route::get('anggota/print-cards', [AnggotaController::class, 'printCards'])->name('anggota.print-cards');
+    Route::get('anggota/print-cards-view', [AnggotaController::class, 'printCardsView'])->name('anggota.print-cards-view');
+    Route::get('anggota/{anggota}', [AnggotaController::class, 'show'])->name('anggota.show');
+    Route::get('anggota/{anggota}/edit', [AnggotaController::class, 'edit'])->name('anggota.edit');
+    Route::put('anggota/{anggota}', [AnggotaController::class, 'update'])->name('anggota.update');
+    Route::delete('anggota/{anggota}', [AnggotaController::class, 'destroy'])->name('anggota.destroy');
+    Route::get('anggota/{anggota}/card', [AnggotaController::class, 'card'])->name('anggota.card');
+    
     // --- Manajemen Buku ---
     Route::get('buku', [BukuController::class, 'index'])->name('buku.index');
     Route::get('buku/create', [BukuController::class, 'create'])->name('buku.create');
@@ -106,14 +108,15 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // --- Laporan ---
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
-    Route::get('laporan/data-master', [LaporanController::class, 'dataMaster'])->name('laporan.data-master');
     Route::get('laporan/transaksi', [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
-    Route::get('laporan/semua', [LaporanController::class, 'semuaData'])->name('laporan.semua');
-    Route::get('laporan/print/data-master', [LaporanController::class, 'printDataMaster'])->name('laporan.print.data-master');
     Route::get('laporan/print/transaksi', [LaporanController::class, 'printTransaksi'])->name('laporan.print.transaksi');
-    Route::get('laporan/print/semua', [LaporanController::class, 'printSemua'])->name('laporan.print.semua');
-    Route::get('laporan/peminjaman', [DashboardController::class, 'laporanPeminjaman'])->name('laporan.peminjaman');
-    Route::get('laporan/denda', [DashboardController::class, 'laporanDenda'])->name('laporan.denda');
+    Route::get('laporan/denda', [LaporanController::class, 'laporanDenda'])->name('laporan.denda');
+    Route::get('laporan/print/denda', [LaporanController::class, 'printDenda'])->name('laporan.print.denda');
+    Route::get('laporan/analisis-peminjaman', [LaporanController::class, 'analisisPeminjaman'])->name('laporan.analisis-peminjaman');
+    Route::get('laporan/print/analisis-peminjaman', [LaporanController::class, 'printAnalisisPeminjaman'])->name('laporan.print.analisis-peminjaman');
+
+
+
 
     // --- Profil ---
     Route::get('profile', [AuthController::class, 'profile'])->name('profile');

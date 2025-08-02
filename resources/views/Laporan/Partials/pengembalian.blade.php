@@ -20,9 +20,9 @@
                 <td>{{ $item->tanggal_kembali_aktual->format('d/m/Y') }}</td>
                 <td>
                     @if($item->dendaRecord)
-                        {{ $item->dendaRecord->hari_terlambat }} hari
+                        <span class="badge bg-danger">{{ $item->dendaRecord->hari_terlambat }} hari</span>
                     @else
-                        0 hari
+                        <span class="badge bg-success">Tepat Waktu</span>
                     @endif
                 </td>
             </tr>

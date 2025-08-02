@@ -20,7 +20,15 @@
                 <td>{{ $item->buku->judul ?? '-' }}</td>
                 <td>{{ $item->tanggal_pinjam->format('d/m/Y') }}</td>
                 <td>{{ $item->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                <td><span class="badge bg-danger">Terlambat</span></td>
+                <td>
+                    @if($item->status_realtime == 'dikembalikan')
+                        <span class="badge bg-success">Dikembalikan</span>
+                    @elseif($item->status_realtime == 'terlambat')
+                        <span class="badge bg-danger">Terlambat</span>
+                    @else
+                        <span class="badge bg-primary">Dipinjam</span>
+                    @endif
+                </td>
             </tr>
             @endforeach
         </tbody>

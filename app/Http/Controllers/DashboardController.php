@@ -8,6 +8,8 @@ use App\Models\Peminjaman;
 use App\Models\Denda;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -29,20 +31,87 @@ class DashboardController extends Controller
             
         $totalDenda = Denda::where('status_bayar', 'belum-dibayar')->sum('total_denda');
         
+        // Ambil 5 peminjaman terbaru yang unik
         $peminjamanTerbaru = Peminjaman::with(['anggota', 'buku'])
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+            ->orderBy('id', 'desc')
+            ->limit(10) // Ambil lebih banyak untuk memastikan tidak ada duplikasi
+            ->get()
+            ->unique(function ($item) {
+                return $item->anggota_id . '-' . $item->buku_id . '-' . $item->tanggal_pinjam;
+            })
+            ->take(5);
             
-        $bukuTerpopuler = Buku::withCount('peminjamans')
-            ->orderBy('peminjamans_count', 'desc')
+        $bukuTerpopuler = Buku::select('bukus.*')
+            ->selectRaw('(SELECT COUNT(*) FROM peminjamans WHERE peminjamans.buku_id = bukus.id) as total_peminjaman')
+            ->orderBy('total_peminjaman', 'desc')
             ->limit(5)
             ->get();
+
+        // Data untuk grafik trend peminjaman 7 hari terakhir
+        $trendPeminjaman = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $count = Peminjaman::whereDate('tanggal_pinjam', $date)->count();
+            $trendPeminjaman[] = [
+                'date' => $date->format('d/m'),
+                'count' => $count
+            ];
+        }
+
+        // Data untuk grafik status peminjaman
+        $statusPeminjaman = [
+            'Dipinjam' => Peminjaman::where('status', 'dipinjam')->count(),
+            'Dikembalikan' => Peminjaman::where('status', 'dikembalikan')->count(),
+            'Terlambat' => Peminjaman::where('status', 'terlambat')->count()
+        ];
+        
+        // Fallback jika tidak ada data
+        if (empty($trendPeminjaman)) {
+            $trendPeminjaman = [
+                ['date' => '01/01', 'count' => 0],
+                ['date' => '02/01', 'count' => 0],
+                ['date' => '03/01', 'count' => 0],
+                ['date' => '04/01', 'count' => 0],
+                ['date' => '05/01', 'count' => 0],
+                ['date' => '06/01', 'count' => 0],
+                ['date' => '07/01', 'count' => 0]
+            ];
+        }
+        
+        if (empty($statusPeminjaman)) {
+            $statusPeminjaman = [
+                'Dipinjam' => 0,
+                'Dikembalikan' => 0,
+                'Terlambat' => 0
+            ];
+        }
+        
+        // Debug: Log data untuk memastikan terkirim
+        Log::info('Dashboard Data:', [
+            'trendPeminjaman' => $trendPeminjaman,
+            'statusPeminjaman' => $statusPeminjaman,
+            'bukuTerpopuler' => $bukuTerpopuler->map(function($buku) {
+                return [
+                    'id' => $buku->id,
+                    'judul' => $buku->judul,
+                    'total_peminjaman' => $buku->total_peminjaman
+                ];
+            })
+        ]);
+        
+        // Pastikan data tidak null
+        if (is_null($trendPeminjaman)) {
+            $trendPeminjaman = [];
+        }
+        
+        if (is_null($statusPeminjaman)) {
+            $statusPeminjaman = [];
+        }
             
         return view('dashboard.index', compact(
             'totalAnggota', 'totalBuku', 'bukuTersedia', 'bukuDipinjam',
             'peminjamanHariIni', 'pengembalianHariIni', 'terlambat', 'totalDenda',
-            'peminjamanTerbaru', 'bukuTerpopuler'
+            'peminjamanTerbaru', 'bukuTerpopuler', 'trendPeminjaman', 'statusPeminjaman'
         ));
     }
     

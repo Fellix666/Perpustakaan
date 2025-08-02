@@ -12,8 +12,6 @@ class Anggota extends Model
     protected $fillable = [
         'nomor_anggota',
         'nama_lengkap',
-        'tempat_lahir',
-        'tanggal_lahir',
         'jenis_kelamin',
         'kelas',
         'alamat',
@@ -21,6 +19,8 @@ class Anggota extends Model
         'tanggal_daftar',
         'status',
         'foto',
+        'tempat_lahir',
+        'tanggal_lahir',
     ];
 
     protected $casts = [

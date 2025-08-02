@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon; // <-- TAMBAHKAN INI
+use Carbon\Carbon;
 
 class Peminjaman extends Model
 {
@@ -49,12 +49,76 @@ class Peminjaman extends Model
             return 'dikembalikan';
         }
 
-        // Jika belum dikembalikan, cek apakah sudah lewat batas waktu.
-        if (Carbon::now()->startOfDay()->isAfter($this->attributes['tanggal_kembali_rencana'])) {
-            return 'terlambat';
+        // Jika ada tanggal_kembali_aktual, berarti sudah dikembalikan
+        if ($this->tanggal_kembali_aktual) {
+            return 'dikembalikan';
+        }
+
+        // Untuk data historis (peminjaman lama), gunakan status database
+        // Jika peminjaman lebih dari 30 hari yang lalu, anggap sebagai data historis
+        $now = Carbon::now();
+        $tanggalPinjam = $this->tanggal_pinjam;
+        
+        // Cek apakah data lebih dari 30 hari yang lalu
+        $thirtyDaysAgo = $now->copy()->subDays(30);
+        if ($tanggalPinjam && $tanggalPinjam->lt($thirtyDaysAgo)) {
+            // Data historis - gunakan status database
+            return $this->attributes['status'];
+        }
+
+        // Untuk data realtime (peminjaman baru), cek keterlambatan
+        if ($this->tanggal_kembali_rencana) {
+            $now = Carbon::now()->startOfDay();
+            $tglKembali = $this->tanggal_kembali_rencana->startOfDay();
+            
+            // Tampilkan terlambat jika sudah lewat batas waktu DAN belum dikembalikan
+            // Tapi hanya jika sudah lewat lebih dari 1 hari untuk memberikan toleransi
+            if ($now->gt($tglKembali) && !$this->tanggal_kembali_aktual) {
+                // Berikan toleransi 1 hari sebelum dianggap terlambat
+                $toleransi = $tglKembali->copy()->addDay();
+                if ($now->gt($toleransi)) {
+                    return 'terlambat';
+                }
+            }
         }
 
         // Jika tidak keduanya, berarti masih 'dipinjam'.
+        return 'dipinjam';
+    }
+
+    /**
+     * Mendapatkan status berdasarkan tanggal tertentu (untuk laporan historis)
+     */
+    public function getStatusAtDate($date = null)
+    {
+        if (!$date) {
+            $date = Carbon::now();
+        }
+        
+        if (!($date instanceof Carbon)) {
+            $date = Carbon::parse($date);
+        }
+
+        // Jika status di database sudah 'dikembalikan', maka final.
+        if ($this->attributes['status'] === 'dikembalikan') {
+            return 'dikembalikan';
+        }
+
+        // Jika ada tanggal_kembali_aktual, berarti sudah dikembalikan
+        if ($this->tanggal_kembali_aktual) {
+            return 'dikembalikan';
+        }
+
+        // Cek keterlambatan berdasarkan tanggal yang diberikan
+        if ($this->tanggal_kembali_rencana) {
+            $checkDate = $date->startOfDay();
+            $tglKembali = $this->tanggal_kembali_rencana->startOfDay();
+            
+            if ($checkDate->gt($tglKembali) && !$this->tanggal_kembali_aktual) {
+                return 'terlambat';
+            }
+        }
+
         return 'dipinjam';
     }
 }

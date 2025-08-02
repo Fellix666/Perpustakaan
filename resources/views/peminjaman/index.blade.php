@@ -113,7 +113,14 @@
                     </table>
                 </div>
                 <div class="card-footer">
-                    {{ $peminjamans->links() }}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            Menampilkan {{ $peminjamans->firstItem() ?? 0 }} - {{ $peminjamans->lastItem() ?? 0 }} dari {{ $peminjamans->total() }} data
+                        </div>
+                        <div>
+                            {{ $peminjamans->links('vendor.pagination.simple-bootstrap-5') }}
+                        </div>
+                    </div>
                 </div>
             @else
                 <div class="text-center py-5">

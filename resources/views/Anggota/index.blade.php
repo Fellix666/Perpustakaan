@@ -23,6 +23,9 @@
     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
         <i class="fas fa-file-archive me-2"></i>Upload Foto ZIP
     </button>
+    <a href="{{ route('anggota.print-cards') }}" class="btn btn-warning">
+        <i class="fas fa-id-card me-2"></i>Cetak Kartu
+    </a>
     @endif
 </div>
 
@@ -37,14 +40,36 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <div class="alert alert-info">
+            <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Petunjuk Import Excel</h6>
+            <ol class="mb-0">
+              <li>Download template Excel terlebih dahulu</li>
+              <li>Isi data sesuai format yang ada di template</li>
+              <li>Pastikan nomor anggota unik dan tidak duplikat</li>
+              <li>Upload file Excel yang sudah diisi</li>
+            </ol>
+          </div>
+          
           <div class="mb-3">
             <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
             <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+            <div class="form-text">Hanya file Excel (.xlsx) yang diperbolehkan</div>
+          </div>
+          
+          <div class="alert alert-warning">
+            <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Perhatian!</h6>
+            <ul class="mb-0">
+              <li>Data yang sudah ada dengan nomor anggota yang sama akan diupdate</li>
+              <li>Pastikan format data sesuai dengan template</li>
+              <li>Proses import mungkin memakan waktu beberapa saat</li>
+            </ul>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary">Import</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-file-import me-2"></i>Import Data
+          </button>
         </div>
       </form>
     </div>
@@ -87,32 +112,6 @@
 @endsection
 
 @section('content')
-
-{{-- ================================================================= --}}
-{{-- <<<--- KODE PENAMPIL PESAN DITAMBAHKAN DI SINI ---<<< --}}
-{{-- ================================================================= --}}
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-times-circle me-2"></i>
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-@if (session('warning'))
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        {{ session('warning') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-{{-- ================================================================= --}}
 
 <div class="card mb-3">
     <div class="card-body">
@@ -238,11 +237,11 @@
         
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    Menampilkan {{ $anggotas->firstItem() }} - {{ $anggotas->lastItem() }} dari {{ $anggotas->total() }} data
+                <div class="text-muted small">
+                    Menampilkan {{ $anggotas->firstItem() ?? 0 }} - {{ $anggotas->lastItem() ?? 0 }} dari {{ $anggotas->total() }} data
                 </div>
                 <div>
-                    {{ $anggotas->links() }}
+                    {{ $anggotas->links('vendor.pagination.simple-bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -271,10 +270,41 @@ function confirmDelete(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // File input validation for Excel
+    const fileInput = document.getElementById('file');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var fileName = file.name.toLowerCase();
+                if (!fileName.endsWith('.xlsx')) {
+                    alert('Hanya file Excel (.xlsx) yang diperbolehkan!');
+                    this.value = '';
+                }
+            }
+        });
+    }
+    
+    // File input validation for ZIP
+    const zipInput = document.getElementById('zip_file');
+    if (zipInput) {
+        zipInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var fileName = file.name.toLowerCase();
+                if (!fileName.endsWith('.zip')) {
+                    alert('Hanya file ZIP yang diperbolehkan!');
+                    this.value = '';
+                }
+            }
+        });
+    }
 });
 </script>
 @endsection

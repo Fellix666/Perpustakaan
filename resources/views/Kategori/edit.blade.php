@@ -19,7 +19,7 @@
             <div class="card-body">
                 <form action="{{ route('kategori.update', $kategori) }}" method="POST" id="formKategori">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
                     <div class="mb-3">
                         <label for="kode_kategori" class="form-label">Kode Kategori <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('kode_kategori') is-invalid @enderror" id="kode_kategori" name="kode_kategori" value="{{ old('kode_kategori', $kategori->kode_kategori) }}" placeholder="Contoh: KT001">

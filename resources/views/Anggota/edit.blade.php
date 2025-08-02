@@ -103,10 +103,31 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="kelas" class="form-label">Kelas <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('kelas') is-invalid @enderror" 
-                                       id="kelas" name="kelas" 
-                                       value="{{ old('kelas', $anggota->kelas) }}" 
-                                       placeholder="Contoh: VII A, VIII B, IX C">
+                                <select class="form-select @error('kelas') is-invalid @enderror" 
+                                        id="kelas" 
+                                        name="kelas">
+                                    <option value="">Pilih Kelas</option>
+                                    <optgroup label="Kelas VII">
+                                        <option value="VII A" {{ old('kelas', $anggota->kelas) == 'VII A' ? 'selected' : '' }}>VII A</option>
+                                        <option value="VII B" {{ old('kelas', $anggota->kelas) == 'VII B' ? 'selected' : '' }}>VII B</option>
+                                        <option value="VII C" {{ old('kelas', $anggota->kelas) == 'VII C' ? 'selected' : '' }}>VII C</option>
+                                        <option value="VII D" {{ old('kelas', $anggota->kelas) == 'VII D' ? 'selected' : '' }}>VII D</option>
+                                        <option value="VII E" {{ old('kelas', $anggota->kelas) == 'VII E' ? 'selected' : '' }}>VII E</option>
+                                    </optgroup>
+                                    <optgroup label="Kelas VIII">
+                                        <option value="VIII A" {{ old('kelas', $anggota->kelas) == 'VIII A' ? 'selected' : '' }}>VIII A</option>
+                                        <option value="VIII B" {{ old('kelas', $anggota->kelas) == 'VIII B' ? 'selected' : '' }}>VIII B</option>
+                                        <option value="VIII C" {{ old('kelas', $anggota->kelas) == 'VIII C' ? 'selected' : '' }}>VIII C</option>
+                                        <option value="VIII D" {{ old('kelas', $anggota->kelas) == 'VIII D' ? 'selected' : '' }}>VIII D</option>
+                                    </optgroup>
+                                    <optgroup label="Kelas IX">
+                                        <option value="IX A" {{ old('kelas', $anggota->kelas) == 'IX A' ? 'selected' : '' }}>IX A</option>
+                                        <option value="IX B" {{ old('kelas', $anggota->kelas) == 'IX B' ? 'selected' : '' }}>IX B</option>
+                                        <option value="IX C" {{ old('kelas', $anggota->kelas) == 'IX C' ? 'selected' : '' }}>IX C</option>
+                                        <option value="IX D" {{ old('kelas', $anggota->kelas) == 'IX D' ? 'selected' : '' }}>IX D</option>
+                                        <option value="IX E" {{ old('kelas', $anggota->kelas) == 'IX E' ? 'selected' : '' }}>IX E</option>
+                                    </optgroup>
+                                </select>
                                 @error('kelas')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

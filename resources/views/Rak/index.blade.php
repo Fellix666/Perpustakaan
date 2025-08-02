@@ -78,11 +78,11 @@
         </div>
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    Menampilkan {{ $raks->firstItem() }} - {{ $raks->lastItem() }} dari {{ $raks->total() }} data
+                <div class="text-muted small">
+                    Menampilkan {{ $raks->firstItem() ?? 0 }} - {{ $raks->lastItem() ?? 0 }} dari {{ $raks->total() }} data
                 </div>
                 <div>
-                    {{ $raks->links() }}
+                    {{ $raks->links('vendor.pagination.simple-bootstrap-5') }}
                 </div>
             </div>
         </div>

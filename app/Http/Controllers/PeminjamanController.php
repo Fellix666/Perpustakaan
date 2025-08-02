@@ -102,4 +102,6 @@ class PeminjamanController extends Controller
         $peminjaman->update($request->only(['anggota_id', 'buku_id', 'tanggal_pinjam', 'tanggal_kembali_rencana', 'keterangan']));
         return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
+
+
 }

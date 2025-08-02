@@ -59,8 +59,12 @@
         </div>
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
-                <div>Menampilkan {{ $dendas->firstItem() }} - {{ $dendas->lastItem() }} dari {{ $dendas->total() }} data</div>
-                <div>{{ $dendas->links() }}</div>
+                <div class="text-muted small">
+                    Menampilkan {{ $dendas->firstItem() ?? 0 }} - {{ $dendas->lastItem() ?? 0 }} dari {{ $dendas->total() }} data
+                </div>
+                <div>
+                    {{ $dendas->links('vendor.pagination.simple-bootstrap-5') }}
+                </div>
             </div>
         </div>
         @else

@@ -14,39 +14,13 @@
     <a href="{{ route('buku.create') }}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Tambah Buku</a>
     <a href="/template/template_import_buku.xlsx" class="btn btn-outline-success" target="_blank"><i class="fas fa-download me-2"></i>Template Excel</a>
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-file-import me-2"></i>Import Excel</button>
-    {{-- TOMBOL BARU --}}
     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadCoverModal"><i class="fas fa-file-archive me-2"></i>Upload Cover ZIP</button>
     @endif
-</div>
-
-<!-- Modal Import Excel Buku -->
-<div class="modal fade" id="importModal" tabindex="-1">...</div>
-
-<!-- MODAL BARU: Upload Cover ZIP -->
-<div class="modal fade" id="uploadCoverModal" tabindex="-1" aria-labelledby="uploadCoverModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="{{ route('buku.proses-upload-cover') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="modal-header"><h5 class="modal-title" id="uploadCoverModalLabel">Upload Cover Buku Massal</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body">
-            <div class="alert alert-info"><p class="fw-bold">Petunjuk:</p><ol class="mb-0"><li>Ubah nama setiap cover agar sama persis dengan <strong>Kode Buku</strong> (Contoh: <strong>BKU001.jpg</strong>).</li><li>Masukkan semua cover ke dalam satu file <strong>.zip</strong>.</li></ol></div>
-            <div class="mb-3"><label for="zip_file" class="form-label">Pilih File ZIP</label><input type="file" class="form-control" name="zip_file" id="zip_file" accept=".zip" required></div>
-        </div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Upload & Proses</button></div>
-      </form>
-    </div>
-  </div>
 </div>
 @endsection
 
 @section('content')
-{{-- Kode untuk menampilkan notifikasi --}}
-@if (session('success'))<div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-@if (session('error'))<div class="alert alert-danger alert-dismissible fade show" role="alert">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
-@if (session('warning'))<div class="alert alert-warning alert-dismissible fade show" role="alert">{{ session('warning') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
 
-@section('content')
 <div class="card mb-3">
     <div class="card-body">
         <form method="GET" action="{{ route('buku.index') }}" class="row g-2 align-items-end">
@@ -175,11 +149,11 @@
         
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    Menampilkan {{ $bukus->firstItem() }} - {{ $bukus->lastItem() }} dari {{ $bukus->total() }} data
+                <div class="text-muted small">
+                    Menampilkan {{ $bukus->firstItem() ?? 0 }} - {{ $bukus->lastItem() ?? 0 }} dari {{ $bukus->total() }} data
                 </div>
                 <div>
-                    {{ $bukus->links() }}
+                    {{ $bukus->links('vendor.pagination.simple-bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -195,6 +169,70 @@
         @endif
     </div>
 </div>
+
+<!-- Modal Import Excel Buku -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('buku.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Data Buku dari Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Petunjuk Import Excel</h6>
+                        <ol class="mb-0">
+                            <li>Download template Excel terlebih dahulu</li>
+                            <li>Isi data sesuai format yang ada di template</li>
+                            <li>Pastikan kode buku unik dan tidak duplikat</li>
+                            <li>Upload file Excel yang sudah diisi</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
+                        <input type="file" class="form-control" name="file" id="file" accept=".xlsx" required>
+                        <div class="form-text">Hanya file Excel (.xlsx) yang diperbolehkan</div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Perhatian!</h6>
+                        <ul class="mb-0">
+                            <li>Data yang sudah ada dengan kode buku yang sama akan diupdate</li>
+                            <li>Pastikan format data sesuai dengan template</li>
+                            <li>Proses import mungkin memakan waktu beberapa saat</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-import me-2"></i>Import Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL BARU: Upload Cover ZIP -->
+<div class="modal fade" id="uploadCoverModal" tabindex="-1" aria-labelledby="uploadCoverModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('buku.proses-upload-cover') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-header"><h5 class="modal-title" id="uploadCoverModalLabel">Upload Cover Buku Massal</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+            <div class="alert alert-info"><p class="fw-bold">Petunjuk:</p><ol class="mb-0"><li>Ubah nama setiap cover agar sama persis dengan <strong>Kode Buku</strong> (Contoh: <strong>BKU001.jpg</strong>).</li><li>Masukkan semua cover ke dalam satu file <strong>.zip</strong>.</li></ol></div>
+            <div class="mb-3"><label for="zip_file" class="form-label">Pilih File ZIP</label><input type="file" class="form-control" name="zip_file" id="zip_file" accept=".zip" required></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Upload & Proses</button></div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -208,10 +246,41 @@ function confirmDelete(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // File input validation for Excel
+    const fileInput = document.getElementById('file');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var fileName = file.name.toLowerCase();
+                if (!fileName.endsWith('.xlsx')) {
+                    alert('Hanya file Excel (.xlsx) yang diperbolehkan!');
+                    this.value = '';
+                }
+            }
+        });
+    }
+    
+    // File input validation for ZIP
+    const zipInput = document.getElementById('zip_file');
+    if (zipInput) {
+        zipInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var fileName = file.name.toLowerCase();
+                if (!fileName.endsWith('.zip')) {
+                    alert('Hanya file ZIP yang diperbolehkan!');
+                    this.value = '';
+                }
+            }
+        });
+    }
 });
 </script>
 @endsection 
