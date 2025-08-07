@@ -94,12 +94,14 @@
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a href="{{ route('pengembalian.show', $peminjaman->id) }}" class="btn btn-info" title="Detail"><i class="fas fa-eye"></i></a>
-                                            @if($peminjaman->status == 'dikembalikan')
-                                                <a href="{{ route('pengembalian.edit', $peminjaman->id) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <form action="{{ route('pengembalian.destroy', $peminjaman->id) }}" method="POST" style="display:inline;">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
-                                                </form>
+                                            @if(auth('admin')->user()->role === 'admin')
+                                                @if($peminjaman->status == 'dikembalikan')
+                                                    <a href="{{ route('pengembalian.edit', $peminjaman->id) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                                    <form action="{{ route('pengembalian.destroy', $peminjaman->id) }}" method="POST" style="display:inline;">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                    </form>
+                                                @endif
                                             @endif
                                         </div>
                                     </td>
@@ -111,10 +113,10 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-muted small">
-                            Menampilkan {{ $pengembalians->firstItem() ?? 0 }} - {{ $pengembalians->lastItem() ?? 0 }} dari {{ $pengembalians->total() }} data
+                            Menampilkan {{ $peminjamans->firstItem() ?? 0 }} - {{ $peminjamans->lastItem() ?? 0 }} dari {{ $peminjamans->total() }} data
                         </div>
                         <div>
-                            {{ $pengembalians->links('vendor.pagination.simple-bootstrap-5') }}
+                            {{ $peminjamans->links('vendor.pagination.simple-bootstrap-5') }}
                         </div>
                     </div>
                 </div>

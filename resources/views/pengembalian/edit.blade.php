@@ -38,10 +38,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="tanggal_kembali_aktual" class="form-label">Tanggal Kembali Aktual <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control @error('tanggal_kembali_aktual') is-invalid @enderror" id="tanggal_kembali_aktual" name="tanggal_kembali_aktual" value="{{ old('tanggal_kembali_aktual', $peminjaman->tanggal_kembali_aktual ? $peminjaman->tanggal_kembali_aktual->format('Y-m-d') : date('Y-m-d')) }}" required>
+                        <input type="date" class="form-control @error('tanggal_kembali_aktual') is-invalid @enderror" id="tanggal_kembali_aktual" name="tanggal_kembali_aktual" value="{{ old('tanggal_kembali_aktual', $peminjaman->tanggal_kembali_aktual ? $peminjaman->tanggal_kembali_aktual->format('Y-m-d') : date('Y-m-d')) }}" min="{{ $peminjaman->tanggal_kembali_rencana->format('Y-m-d') }}" required>
                         @error('tanggal_kembali_aktual')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <small class="form-text text-muted">Tanggal tidak boleh lebih awal dari {{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</small>
                     </div>
                     <div class="mb-3">
                         <label for="keterangan" class="form-label">Keterangan</label>

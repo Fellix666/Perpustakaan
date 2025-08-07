@@ -19,6 +19,9 @@ class PeminjamanController extends Controller
 
     public function create()
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $anggotas = Anggota::where('status', 'aktif')->orderBy('nama_lengkap')->get();
         $bukus = Buku::where('status', 'tersedia')->where('stok_tersedia', '>', 0)->orderBy('judul')->get();
         return view('peminjaman.create', compact('anggotas', 'bukus'));
@@ -26,6 +29,9 @@ class PeminjamanController extends Controller
 
     public function store(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'anggota_id' => 'required|exists:anggotas,id',
             'buku_id' => 'required|exists:bukus,id',
@@ -66,6 +72,9 @@ class PeminjamanController extends Controller
 
     public function destroy(Peminjaman $peminjaman)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         if ($peminjaman->status === 'dikembalikan') {
             return back()->with('error', 'Tidak dapat menghapus peminjaman yang sudah dikembalikan.');
         }
@@ -86,6 +95,9 @@ class PeminjamanController extends Controller
     // Method edit dan update Anda sudah benar
     public function edit(Peminjaman $peminjaman) 
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $anggotas = Anggota::where('status', 'aktif')->orderBy('nama_lengkap')->get();
         $bukus = Buku::where('status', 'tersedia')->orWhere('id', $peminjaman->buku_id)->orderBy('judul')->get();
         return view('peminjaman.edit', compact('peminjaman', 'anggotas', 'bukus'));
@@ -93,6 +105,9 @@ class PeminjamanController extends Controller
 
     public function update(Request $request, Peminjaman $peminjaman)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'anggota_id' => 'required|exists:anggotas,id',
             'buku_id' => 'required|exists:bukus,id',

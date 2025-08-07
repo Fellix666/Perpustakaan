@@ -119,6 +119,7 @@
                                         <option value="VIII B" {{ old('kelas', $anggota->kelas) == 'VIII B' ? 'selected' : '' }}>VIII B</option>
                                         <option value="VIII C" {{ old('kelas', $anggota->kelas) == 'VIII C' ? 'selected' : '' }}>VIII C</option>
                                         <option value="VIII D" {{ old('kelas', $anggota->kelas) == 'VIII D' ? 'selected' : '' }}>VIII D</option>
+                                        <option value="VIII E" {{ old('kelas', $anggota->kelas) == 'VIII E' ? 'selected' : '' }}>VIII E</option>
                                     </optgroup>
                                     <optgroup label="Kelas IX">
                                         <option value="IX A" {{ old('kelas', $anggota->kelas) == 'IX A' ? 'selected' : '' }}>IX A</option>
@@ -132,6 +133,33 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tahun_ajaran_masuk" class="form-label">
+                            Tahun Ajaran Masuk <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select @error('tahun_ajaran_masuk') is-invalid @enderror" 
+                                id="tahun_ajaran_masuk" 
+                                name="tahun_ajaran_masuk">
+                            <option value="">Pilih Tahun Ajaran</option>
+                            @php
+                                $currentYear = date('Y');
+                                for ($i = 4; $i >= 0; $i--) {
+                                    $year = $currentYear - $i;
+                                    $academicYear = $year . '/' . ($year + 1);
+                                    $selected = old('tahun_ajaran_masuk', $anggota->tahun_ajaran_masuk) == $academicYear ? 'selected' : '';
+                                    echo "<option value=\"{$academicYear}\" {$selected}>{$academicYear}</option>";
+                                }
+                            @endphp
+                        </select>
+                        @error('tahun_ajaran_masuk')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tahun ajaran ketika siswa pertama kali masuk sekolah
                         </div>
                     </div>
 

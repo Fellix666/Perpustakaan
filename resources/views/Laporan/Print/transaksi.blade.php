@@ -59,7 +59,7 @@
                     <th rowspan="2" class="text-center">No</th>
                     <th rowspan="2" class="text-center">Bulan</th>
                     <th colspan="5" class="text-center">Kelas VII</th>
-                    <th colspan="4" class="text-center">Kelas VIII</th>
+                    <th colspan="5" class="text-center">Kelas VIII</th>
                     <th colspan="5" class="text-center">Kelas IX</th>
                     <th rowspan="2" class="text-center">Jumlah</th>
                 </tr>
@@ -74,6 +74,7 @@
                     <th class="text-center">VIIIB</th>
                     <th class="text-center">VIIIC</th>
                     <th class="text-center">VIIID</th>
+                    <th class="text-center">VIIIE</th>
                     <th class="text-center">Jlh</th>
                     <th class="text-center">IXA</th>
                     <th class="text-center">IXB</th>
@@ -99,7 +100,8 @@
                     <td class="text-center">{{ $bulanData['kelas']['VIII B'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII C'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII D'] ?? 0 }}</td>
-                    <td class="text-center fw-bold">{{ array_sum(array_intersect_key($bulanData['kelas'], array_flip(['VIII A', 'VIII B', 'VIII C', 'VIII D']))) }}</td>
+                    <td class="text-center">{{ $bulanData['kelas']['VIII E'] ?? 0 }}</td>
+                    <td class="text-center fw-bold">{{ array_sum(array_intersect_key($bulanData['kelas'], array_flip(['VIII A', 'VIII B', 'VIII C', 'VIII D', 'VIII E']))) }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX A'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX B'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX C'] ?? 0 }}</td>
@@ -124,8 +126,9 @@
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII B'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII C'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII D'] ?? 0; }) }}</td>
+                    <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII E'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { 
-                        $kelasVIII = ['VIII A', 'VIII B', 'VIII C', 'VIII D'];
+                        $kelasVIII = ['VIII A', 'VIII B', 'VIII C', 'VIII D', 'VIII E'];
                         return array_sum(array_intersect_key($bulan['kelas'], array_flip($kelasVIII)));
                     }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX A'] ?? 0; }) }}</td>

@@ -17,12 +17,18 @@ class DendaController extends Controller
 
     public function bayar($id)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $denda = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])->findOrFail($id);
         return view('denda.bayar', compact('denda'));
     }
 
     public function prosesBayar(Request $request, $id)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
             'tanggal_bayar' => 'required|date'
         ]);

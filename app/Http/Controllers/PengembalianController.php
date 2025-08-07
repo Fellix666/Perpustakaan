@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Peminjaman;
-use App\Models\Buku;
 use App\Models\Denda;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +15,26 @@ class PengembalianController extends Controller
      */
     public function store(Request $request, $id)
     {
-        $request->validate(['tanggal_kembali_aktual' => 'required|date']);
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        $request->validate([
+            'tanggal_kembali_aktual' => 'required|date'
+        ]);
 
         DB::beginTransaction();
         try {
             $peminjaman = Peminjaman::with('buku')->findOrFail($id);
+
+            // Validasi tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana
+            $tanggalRencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
+            $tanggalAktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
+            
+            if ($tanggalAktual->lt($tanggalRencana)) {
+                return redirect()->back()
+                    ->withErrors(['tanggal_kembali_aktual' => 'Tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana (' . $peminjaman->tanggal_kembali_rencana->format('d/m/Y') . ')'])
+                    ->withInput();
+            }
 
             if ($peminjaman->status === 'dikembalikan') {
                 return redirect()->route('pengembalian.index')->with('error', 'Buku ini sudah dikembalikan sebelumnya.');
@@ -33,28 +47,28 @@ class PengembalianController extends Controller
             
             $pesanSukses = 'Pengembalian berhasil diproses.';
 
-            // Logika Pengecekan Denda
+            // Logika Pengecekan Denda dengan perhitungan hari kerja
             $rencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
             $aktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
 
             if ($aktual->isAfter($rencana)) {
-                // PERBAIKAN: Gunakan abs() untuk memastikan selisih hari selalu positif
-                $selisihHari = abs($aktual->diffInDays($rencana));
+                // PERBAIKAN: Hitung hari kerja (Senin-Jumat) saja
+                $selisihHariKerja = $this->hitungHariKerja($rencana, $aktual);
                 
-                if ($selisihHari > 0) {
+                if ($selisihHariKerja > 0) {
                     $dendaPerHari = 1000;
-                    $totalDenda = $selisihHari * $dendaPerHari;
+                    $totalDenda = $selisihHariKerja * $dendaPerHari;
 
                     // Buat record baru di tabel dendas
                     Denda::create([
                         'peminjaman_id' => $peminjaman->id,
-                        'hari_terlambat' => $selisihHari,
+                        'hari_terlambat' => $selisihHariKerja,
                         'denda_per_hari' => $dendaPerHari,
                         'total_denda' => $totalDenda,
                         'status_bayar' => 'belum-dibayar',
                     ]);
 
-                    $pesanSukses = 'Pengembalian berhasil dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda);
+                    $pesanSukses = 'Pengembalian berhasil dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKerja . ' hari kerja)';
                 }
             }
             
@@ -77,6 +91,25 @@ class PengembalianController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
+    }
+
+    /**
+     * Menghitung hari kerja (Senin-Jumat) antara dua tanggal
+     */
+    private function hitungHariKerja($tanggalAwal, $tanggalAkhir)
+    {
+        $hariKerja = 0;
+        $tanggal = $tanggalAwal->copy();
+        
+        while ($tanggal->lte($tanggalAkhir)) {
+            // Cek apakah hari ini adalah hari kerja (1=Senin, 2=Selasa, ..., 5=Jumat)
+            if ($tanggal->dayOfWeek >= 1 && $tanggal->dayOfWeek <= 5) {
+                $hariKerja++;
+            }
+            $tanggal->addDay();
+        }
+        
+        return $hariKerja;
     }
 
     /**
@@ -106,6 +139,9 @@ class PengembalianController extends Controller
      */
     public function create($id) 
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $peminjaman = Peminjaman::with(['anggota', 'buku'])->findOrFail($id);
         if ($peminjaman->status === 'dikembalikan') {
             return redirect()->route('peminjaman.show', $peminjaman->id)->with('error', 'Buku ini sudah dikembalikan.');
@@ -114,7 +150,7 @@ class PengembalianController extends Controller
     }
 
     /**
-     * Menampilkan detail data pengembalian.
+     * Menampilkan detail pengembalian.
      */
     public function show($id) 
     {
@@ -123,59 +159,88 @@ class PengembalianController extends Controller
     }
 
     /**
-     * Menampilkan form untuk mengedit data pengembalian.
+     * Menampilkan form edit pengembalian.
      */
     public function edit($id) 
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $peminjaman = Peminjaman::with(['anggota', 'buku'])->findOrFail($id);
         if ($peminjaman->status !== 'dikembalikan') {
-            return back()->with('error', 'Hanya data yang sudah dikembalikan yang bisa diedit.');
+            return redirect()->route('peminjaman.show', $peminjaman->id)->with('error', 'Buku ini belum dikembalikan.');
         }
         return view('pengembalian.edit', compact('peminjaman'));
     }
 
     /**
-     * Memperbarui data pengembalian dan menghitung ulang denda.
+     * Update data pengembalian dan recalculate denda jika tanggal berubah.
      */
     public function update(Request $request, $id)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $request->validate([
-            'tanggal_kembali_aktual' => 'required|date',
-            'keterangan' => 'nullable|string',
+            'tanggal_kembali_aktual' => 'required|date'
         ]);
 
         DB::beginTransaction();
         try {
-            $peminjaman = Peminjaman::findOrFail($id);
-
-            // Hapus denda lama jika ada, karena akan dihitung ulang
-            if ($peminjaman->dendaRecord) {
-                $peminjaman->dendaRecord()->delete();
+            $peminjaman = Peminjaman::with('buku')->findOrFail($id);
+            
+            if ($peminjaman->status !== 'dikembalikan') {
+                return redirect()->route('peminjaman.show', $peminjaman->id)->with('error', 'Buku ini belum dikembalikan.');
             }
 
+            // Validasi tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana
+            $tanggalRencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
+            $tanggalAktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
+            
+            if ($tanggalAktual->lt($tanggalRencana)) {
+                return redirect()->back()
+                    ->withErrors(['tanggal_kembali_aktual' => 'Tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana (' . $peminjaman->tanggal_kembali_rencana->format('d/m/Y') . ')'])
+                    ->withInput();
+            }
+
+            $tanggalLama = $peminjaman->tanggal_kembali_aktual;
+            $tanggalBaru = Carbon::parse($request->tanggal_kembali_aktual);
+
+            // Update data peminjaman
             $peminjaman->tanggal_kembali_aktual = $request->tanggal_kembali_aktual;
             $peminjaman->keterangan = $request->keterangan;
+            
             $pesanSukses = 'Data pengembalian berhasil diperbarui.';
 
-            // Hitung ulang keterlambatan dan denda
-            $rencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
-            $aktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
+            // Recalculate denda jika tanggal berubah
+            if ($tanggalLama != $tanggalBaru) {
+                // Hapus denda lama jika ada
+                if ($peminjaman->dendaRecord) {
+                    $peminjaman->dendaRecord->delete();
+                }
 
-            if ($aktual->isAfter($rencana)) {
-                $selisihHari = abs($aktual->diffInDays($rencana));
-                if ($selisihHari > 0) {
-                    $dendaPerHari = 1000;
-                    $totalDenda = $selisihHari * $dendaPerHari;
+                // Hitung denda baru dengan hari kerja
+                $rencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
+                $aktual = $tanggalBaru->startOfDay();
 
-                    // Buat denda baru
-                    Denda::create([
-                        'peminjaman_id' => $peminjaman->id,
-                        'hari_terlambat' => $selisihHari,
-                        'denda_per_hari' => $dendaPerHari,
-                        'total_denda' => $totalDenda,
-                        'status_bayar' => 'belum-dibayar',
-                    ]);
-                    $pesanSukses = 'Data pengembalian diperbarui dengan denda keterlambatan.';
+                if ($aktual->isAfter($rencana)) {
+                    $selisihHariKerja = $this->hitungHariKerja($rencana, $aktual);
+                    
+                    if ($selisihHariKerja > 0) {
+                        $dendaPerHari = 1000;
+                        $totalDenda = $selisihHariKerja * $dendaPerHari;
+
+                        // Buat record denda baru
+                        Denda::create([
+                            'peminjaman_id' => $peminjaman->id,
+                            'hari_terlambat' => $selisihHariKerja,
+                            'denda_per_hari' => $dendaPerHari,
+                            'total_denda' => $totalDenda,
+                            'status_bayar' => 'belum-dibayar',
+                        ]);
+
+                        $pesanSukses = 'Data pengembalian berhasil diperbarui dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKerja . ' hari kerja)';
+                    }
                 }
             }
             
@@ -186,27 +251,41 @@ class PengembalianController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat update: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
-     * Menghapus data pengembalian (peminjaman yang sudah selesai).
+     * Hapus data pengembalian (menghapus data peminjaman secara permanen).
      */
     public function destroy($id) 
     {
-        $peminjaman = Peminjaman::findOrFail($id);
-
-        if ($peminjaman->status !== 'dikembalikan') {
-            return back()->with('error', 'Hanya data yang sudah dikembalikan yang bisa dihapus.');
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
         }
-        
-        // Hapus denda terkait (jika ada) dan data peminjaman itu sendiri.
-        // Relasi onDelete('cascade') di database akan menangani ini secara otomatis,
-        // namun melakukannya secara eksplisit di sini juga baik.
-        $peminjaman->dendaRecord()->delete();
-        $peminjaman->delete();
+        DB::beginTransaction();
+        try {
+            $peminjaman = Peminjaman::with('buku')->findOrFail($id);
+            
+            if ($peminjaman->status !== 'dikembalikan') {
+                return redirect()->route('peminjaman.show', $peminjaman->id)->with('error', 'Buku ini belum dikembalikan.');
+            }
 
-        return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil dihapus.');
+            // Hapus denda jika ada
+            if ($peminjaman->dendaRecord) {
+                $peminjaman->dendaRecord->delete();
+            }
+
+            // Hapus data peminjaman secara permanen
+            // Catatan: Stok buku tidak perlu dikembalikan karena sudah dikembalikan saat proses pengembalian
+            $peminjaman->delete();
+
+            DB::commit();
+            return redirect()->route('pengembalian.index')->with('success', 'Data pengembalian berhasil dihapus secara permanen.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

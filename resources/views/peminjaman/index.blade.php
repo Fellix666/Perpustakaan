@@ -7,9 +7,11 @@
 @endsection
 
 @section('page-actions')
-    <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Tambah Peminjaman
-    </a>
+    @if(auth('admin')->user()->role === 'admin')
+        <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Tambah Peminjaman
+        </a>
+    @endif
 @endsection
 
 @section('content')
@@ -95,15 +97,17 @@
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a href="{{ route('peminjaman.show', $peminjaman) }}" class="btn btn-info" title="Detail"><i class="fas fa-eye"></i></a>
-                                            {{-- Logika ini sudah benar, karena status 'terlambat' secara database masih 'dipinjam' --}}
-                                            @if($peminjaman->status != 'dikembalikan')
-                                                <a href="{{ route('peminjaman.edit', $peminjaman) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <form action="{{ route('peminjaman.destroy', $peminjaman) }}" method="POST" style="display:inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
-                                                </form>
-                                                <a href="{{ route('pengembalian.create', $peminjaman->id) }}" class="btn btn-success" title="Proses Pengembalian"><i class="fas fa-undo"></i></a>
+                                            @if(auth('admin')->user()->role === 'admin')
+                                                {{-- Logika ini sudah benar, karena status 'terlambat' secara database masih 'dipinjam' --}}
+                                                @if($peminjaman->status != 'dikembalikan')
+                                                    <a href="{{ route('peminjaman.edit', $peminjaman) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                                    <form action="{{ route('peminjaman.destroy', $peminjaman) }}" method="POST" style="display:inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                    </form>
+                                                    <a href="{{ route('pengembalian.create', $peminjaman->id) }}" class="btn btn-success" title="Proses Pengembalian"><i class="fas fa-undo"></i></a>
+                                                @endif
                                             @endif
                                         </div>
                                     </td>

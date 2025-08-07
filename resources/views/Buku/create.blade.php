@@ -21,7 +21,7 @@
                     @csrf
                     <div class="mb-3">
                         <label for="kode_buku" class="form-label">Kode Buku <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('kode_buku') is-invalid @enderror" id="kode_buku" name="kode_buku" value="{{ old('kode_buku') }}" placeholder="Contoh: BKU001">
+                        <input type="text" class="form-control @error('kode_buku') is-invalid @enderror" id="kode_buku" name="kode_buku" value="{{ old('kode_buku') }}" placeholder="Contoh: 000">
                         @error('kode_buku')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

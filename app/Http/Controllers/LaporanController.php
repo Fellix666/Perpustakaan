@@ -134,7 +134,7 @@ class LaporanController extends Controller
                 'bulan' => $namaBulan . ' ' . $tahun,
                 'kelas' => [
                     'VII A' => 0, 'VII B' => 0, 'VII C' => 0, 'VII D' => 0, 'VII E' => 0,
-                    'VIII A' => 0, 'VIII B' => 0, 'VIII C' => 0, 'VIII D' => 0,
+                    'VIII A' => 0, 'VIII B' => 0, 'VIII C' => 0, 'VIII D' => 0, 'VIII E' => 0,
                     'IX A' => 0, 'IX B' => 0, 'IX C' => 0, 'IX D' => 0, 'IX E' => 0
                 ]
             ];
@@ -152,63 +152,21 @@ class LaporanController extends Controller
     }
 
     /**
-     * Mendapatkan tahun ajaran yang tersedia berdasarkan data peminjaman
+     * Mendapatkan tahun ajaran yang tersedia (5 tahun ajaran terakhir)
      */
     public function getAvailableAcademicYears()
     {
-        // Ambil semua data peminjaman dengan tahun dan bulan
-        $peminjamanData = Peminjaman::selectRaw('YEAR(tanggal_pinjam) as tahun, MONTH(tanggal_pinjam) as bulan')
-            ->distinct()
-            ->get();
-            
-        // Ambil semua data denda dengan tahun dan bulan
-        $dendaData = Denda::selectRaw('YEAR(created_at) as tahun, MONTH(created_at) as bulan')
-            ->distinct()
-            ->get();
+        // Ambil tahun ajaran saat ini (tahun ini)
+        $currentYear = date('Y');
         
-        // Buat daftar tahun ajaran berdasarkan data yang ada
+        // Buat 5 tahun ajaran terakhir
         $academicYears = collect();
-        
-        // Proses data peminjaman
-        foreach ($peminjamanData as $item) {
-            $year = $item->tahun;
-            $month = $item->bulan;
-            
-            // Jika bulan Januari-Juni, tahun ajaran adalah (tahun-1)/(tahun)
-            // Jika bulan Juli-Desember, tahun ajaran adalah (tahun)/(tahun+1)
-            if ($month >= 1 && $month <= 6) {
-                $academicYear = $year - 1; // Tahun ajaran dimulai tahun sebelumnya
-            } else {
-                $academicYear = $year; // Tahun ajaran dimulai tahun ini
-            }
-            
-            if (!$academicYears->contains($academicYear)) {
-                $academicYears->push($academicYear);
-            }
+        for ($i = 4; $i >= 0; $i--) {
+            $tahun = $currentYear - $i;
+            $academicYears->push($tahun);
         }
         
-        // Proses data denda
-        foreach ($dendaData as $item) {
-            $year = $item->tahun;
-            $month = $item->bulan;
-            
-            if ($month >= 1 && $month <= 6) {
-                $academicYear = $year - 1;
-            } else {
-                $academicYear = $year;
-            }
-            
-            if (!$academicYears->contains($academicYear)) {
-                $academicYears->push($academicYear);
-            }
-        }
-        
-        // Jika tidak ada data, gunakan tahun saat ini
-        if ($academicYears->isEmpty()) {
-            $academicYears = collect([Carbon::now()->year]);
-        }
-        
-        return $academicYears->sort()->reverse();
+        return $academicYears;
     }
 
     /**
@@ -236,7 +194,7 @@ class LaporanController extends Controller
         // Hitung total denda
         $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
         $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-            $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+            $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
             return max(0, $hariTerlambat) * 1000; // Denda per hari Rp 1.000, minimal 0
         });
         
@@ -246,6 +204,25 @@ class LaporanController extends Controller
             'totalDendaBelumBayar' => $totalDendaBelumBayar,
             'totalDendaTerlambat' => $totalDendaTerlambat
         ];
+    }
+
+    /**
+     * Menghitung hari kerja (Senin-Jumat) antara dua tanggal
+     */
+    private function hitungHariKerja($tanggalAwal, $tanggalAkhir)
+    {
+        $hariKerja = 0;
+        $tanggal = Carbon::parse($tanggalAwal)->copy();
+        
+        while ($tanggal->lte($tanggalAkhir)) {
+            // Cek apakah hari ini adalah hari kerja (1=Senin, 2=Selasa, ..., 5=Jumat)
+            if ($tanggal->dayOfWeek >= 1 && $tanggal->dayOfWeek <= 5) {
+                $hariKerja++;
+            }
+            $tanggal->addDay();
+        }
+        
+        return $hariKerja;
     }
 
     /**
@@ -284,7 +261,7 @@ class LaporanController extends Controller
             $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
             $totalDendaSudahBayar = 0;
             $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-                $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+                $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
                 return max(0, $hariTerlambat) * 1000;
             });
             
@@ -387,7 +364,7 @@ class LaporanController extends Controller
             $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
             $totalDendaSudahBayar = 0;
             $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-                $hariTerlambat = Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
+                $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
                 return max(0, $hariTerlambat) * 1000;
             });
             

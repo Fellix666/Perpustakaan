@@ -167,6 +167,9 @@ class BukuController extends Controller
 
     public function export()
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
         $bukus = \App\Models\Buku::with(['kategori', 'rak'])->orderBy('judul')->get();
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

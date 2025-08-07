@@ -404,4 +404,82 @@
     .card-footer .text-muted.small {
         font-size: 0.875rem;
     }
+
+    /* Select2 Custom Styles */
+    .select2-container--bootstrap-5 .select2-selection {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        min-height: 38px;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--single {
+        background-color: #fff;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        color: #212529;
+        line-height: 1.5;
+        padding-left: 0;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder {
+        color: #6c757d;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+        right: 6px;
+    }
+
+    .select2-container--bootstrap-5 .select2-dropdown {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option {
+        padding: 0.375rem 0.75rem;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .select2-container--bootstrap-5 .select2-search__field {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .select2-container--bootstrap-5 .select2-search__field:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        outline: 0;
+    }
+
+    /* Select2 focus state */
+    .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Select2 error state */
+    .select2-container--bootstrap-5.is-invalid .select2-selection {
+        border-color: #dc3545;
+    }
+
+    .select2-container--bootstrap-5.is-invalid .select2-selection:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+
+    /* Stok info styling */
+    .stok-info {
+        border-radius: 0.375rem;
+        border: 1px solid #b6d4fe;
+        background-color: #cff4fc;
+        color: #055160;
+    }
 </style>

@@ -23,10 +23,10 @@
     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadFotoModal">
         <i class="fas fa-file-archive me-2"></i>Upload Foto ZIP
     </button>
+    @endif
     <a href="{{ route('anggota.print-cards') }}" class="btn btn-warning">
         <i class="fas fa-id-card me-2"></i>Cetak Kartu
     </a>
-    @endif
 </div>
 
 <!-- Modal Import Excel -->
@@ -91,7 +91,7 @@
                 <strong>Petunjuk:</strong>
                 <ol class="mb-0">
                     <li>Siapkan semua file foto (JPG, PNG).</li>
-                    <li>Ubah nama setiap foto agar sama persis dengan <strong>Nomor Anggota</strong>. Contoh: <strong>AGT2025001.jpg</strong></li>
+                                            <li>Ubah nama setiap foto agar sama persis dengan <strong>Nomor Anggota</strong>. Contoh: <strong>01-PPUS-2025.jpg</strong></li>
                     <li>Masukkan semua foto tersebut ke dalam satu file <strong>.zip</strong>.</li>
                     <li>Upload file .zip di bawah ini.</li>
                 </ol>
@@ -117,7 +117,7 @@
     <div class="card-body">
         <form method="GET" action="{{ route('anggota.index') }}" class="row g-2 align-items-end">
             <div class="col-md-3">
-                <label for="filterTahun" class="form-label mb-0">Tahun Daftar</label>
+                <label for="filterTahun" class="form-label mb-0">Tahun Ajaran Masuk</label>
                 <select class="form-select" id="filterTahun" name="tahun_daftar">
                     <option value="">Semua</option>
                     @foreach($tahunDaftarList as $tahun)
@@ -224,9 +224,22 @@
                                     </button>
                                 </form>
                                 @endif
-                                <a href="{{ route('anggota.card', $anggota) }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="Cetak Kartu" target="_blank">
-                                    <i class="fas fa-print"></i>
-                                </a>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Cetak Kartu">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ route('anggota.card', $anggota) }}?color=blue" target="_blank">
+                                            <i class="fas fa-circle text-primary me-2"></i>Biru
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('anggota.card', $anggota) }}?color=red" target="_blank">
+                                            <i class="fas fa-circle text-danger me-2"></i>Merah
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('anggota.card', $anggota) }}?color=green" target="_blank">
+                                            <i class="fas fa-circle text-success me-2"></i>Hijau
+                                        </a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </td>
                     </tr>

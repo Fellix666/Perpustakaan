@@ -17,6 +17,7 @@ class Anggota extends Model
         'alamat',
         'telepon',
         'tanggal_daftar',
+        'tahun_ajaran_masuk',
         'status',
         'foto',
         'tempat_lahir',

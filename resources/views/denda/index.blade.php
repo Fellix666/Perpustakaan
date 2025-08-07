@@ -49,7 +49,9 @@
                         <td>{{ $denda->tanggal_bayar ? date('d/m/Y', strtotime($denda->tanggal_bayar)) : '-' }}</td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('denda.bayar', $denda->id) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="Bayar/Lunas"><i class="fas fa-money-bill-wave"></i></a>
+                                @if(auth('admin')->user()->role === 'admin')
+                                    <a href="{{ route('denda.bayar', $denda->id) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="Bayar/Lunas"><i class="fas fa-money-bill-wave"></i></a>
+                                @endif
                             </div>
                         </td>
                     </tr>

@@ -13,6 +13,6 @@
     </main>
     @include('layouts/footer')
     @include('layouts/scripts')
-    @stack('scripts')
+    @yield('scripts')
 </body>
 </html>

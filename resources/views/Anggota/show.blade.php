@@ -87,6 +87,10 @@
                         <td>: {{ $anggota->tanggal_daftar->format('d F Y') }}</td>
                     </tr>
                     <tr>
+                        <td><strong>Tahun Ajaran Masuk</strong></td>
+                        <td>: {{ $anggota->tahun_ajaran_masuk ?? 'Tidak ada' }}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Status</strong></td>
                         <td>: 
                             @if($anggota->status == 'aktif')

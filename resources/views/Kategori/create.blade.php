@@ -21,7 +21,7 @@
                     @csrf
                     <div class="mb-3">
                         <label for="kode_kategori" class="form-label">Kode Kategori <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('kode_kategori') is-invalid @enderror" id="kode_kategori" name="kode_kategori" value="{{ old('kode_kategori') }}" placeholder="Contoh: KT001">
+                        <input type="text" class="form-control @error('kode_kategori') is-invalid @enderror" id="kode_kategori" name="kode_kategori" value="{{ old('kode_kategori') }}" placeholder="Contoh: 000">
                         @error('kode_kategori')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
