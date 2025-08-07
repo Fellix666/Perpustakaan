@@ -235,16 +235,59 @@ class BukuController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
         }
+        
+        // Ambil data kategori dan rak untuk mapping
+        $kategoris = \App\Models\Kategori::all()->keyBy('kode_kategori');
+        $raks = \App\Models\Rak::all()->keyBy('kode_rak');
+        
         $imported = 0;
         foreach ($rows as $i => $row) {
-            if (empty($row['kode_buku']) || empty($row['judul']) || empty($row['pengarang']) || empty($row['penerbit']) || empty($row['tahun_terbit']) || empty($row['stok_total']) || empty($row['kategori_id']) || empty($row['rak_id'])) {
+            if (empty($row['kode_buku']) || empty($row['judul']) || empty($row['pengarang']) || empty($row['penerbit']) || empty($row['tahun_terbit']) || empty($row['stok_total'])) {
                 $errors[] = "Baris ke-".($i+2).": Data wajib tidak lengkap.";
                 continue;
             }
+            
+            // Cek apakah menggunakan kode atau ID
+            $kategoriId = null;
+            $rakId = null;
+            
+            // Cek kategori
+            if (!empty($row['kode_kategori'])) {
+                // Menggunakan kode kategori
+                if (!$kategoris->has($row['kode_kategori'])) {
+                    $errors[] = "Baris ke-".($i+2).": Kode kategori '{$row['kode_kategori']}' tidak ditemukan.";
+                    continue;
+                }
+                $kategoriId = $kategoris->get($row['kode_kategori'])->id;
+            } elseif (!empty($row['kategori_id'])) {
+                // Menggunakan ID kategori (backward compatibility)
+                $kategoriId = $row['kategori_id'];
+            } else {
+                $errors[] = "Baris ke-".($i+2).": Kode kategori atau kategori_id harus diisi.";
+                continue;
+            }
+            
+            // Cek rak
+            if (!empty($row['kode_rak'])) {
+                // Menggunakan kode rak
+                if (!$raks->has($row['kode_rak'])) {
+                    $errors[] = "Baris ke-".($i+2).": Kode rak '{$row['kode_rak']}' tidak ditemukan.";
+                    continue;
+                }
+                $rakId = $raks->get($row['kode_rak'])->id;
+            } elseif (!empty($row['rak_id'])) {
+                // Menggunakan ID rak (backward compatibility)
+                $rakId = $row['rak_id'];
+            } else {
+                $errors[] = "Baris ke-".($i+2).": Kode rak atau rak_id harus diisi.";
+                continue;
+            }
+            
             if (\App\Models\Buku::where('kode_buku', $row['kode_buku'])->exists()) {
                 $errors[] = "Baris ke-".($i+2).": Kode buku sudah ada.";
                 continue;
             }
+            
             try {
                 \App\Models\Buku::create([
                     'kode_buku' => $row['kode_buku'],
@@ -257,8 +300,8 @@ class BukuController extends Controller
                     'deskripsi' => $row['deskripsi'] ?? null,
                     'stok_total' => $row['stok_total'],
                     'stok_tersedia' => $row['stok_total'],
-                    'kategori_id' => $row['kategori_id'],
-                    'rak_id' => $row['rak_id'],
+                    'kategori_id' => $kategoriId,
+                    'rak_id' => $rakId,
                     'status' => $row['status'] ?? 'tersedia',
                     // 'cover' => $row['cover'] ?? null, // cover diisi manual lewat aplikasi
                 ]);

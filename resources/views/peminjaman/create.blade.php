@@ -23,11 +23,6 @@
                         <label for="anggota_id" class="form-label">Anggota <span class="text-danger">*</span></label>
                         <select class="form-select select2-anggota @error('anggota_id') is-invalid @enderror" id="anggota_id" name="anggota_id" required>
                             <option value="">-- Pilih Anggota --</option>
-                            @foreach($anggotas as $anggota)
-                                <option value="{{ $anggota->id }}" {{ old('anggota_id') == $anggota->id ? 'selected' : '' }}>
-                                    {{ $anggota->nama_lengkap }} ({{ $anggota->nomor_anggota }}) - {{ $anggota->kelas }}
-                                </option>
-                            @endforeach
                         </select>
                         @error('anggota_id')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -40,12 +35,6 @@
                         <label for="buku_id" class="form-label">Buku <span class="text-danger">*</span></label>
                         <select class="form-select select2-buku @error('buku_id') is-invalid @enderror" id="buku_id" name="buku_id" required>
                             <option value="">-- Pilih Buku --</option>
-                            @foreach($bukus as $buku)
-                                <option value="{{ $buku->id }}" {{ old('buku_id') == $buku->id ? 'selected' : '' }}
-                                        data-stok="{{ $buku->stok_tersedia }}" data-kode="{{ $buku->kode_buku }}">
-                                    {{ $buku->judul }} ({{ $buku->kode_buku }}) - Stok: {{ $buku->stok_tersedia }}
-                                </option>
-                            @endforeach
                         </select>
                         @error('buku_id')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -96,6 +85,28 @@ $(document).ready(function() {
         placeholder: 'Pilih Anggota',
         allowClear: true,
         width: '100%',
+        ajax: {
+            url: '{{ route("peminjaman.search-anggota") }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    search: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.map(function(item) {
+                        return {
+                            id: item.id,
+                            text: item.nomor_anggota + ' - ' + item.nama_lengkap + ' (' + item.kelas + ')'
+                        };
+                    })
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
         language: {
             noResults: function() {
                 return "Tidak ada anggota ditemukan";
@@ -105,6 +116,31 @@ $(document).ready(function() {
             }
         }
     });
+    
+    // Auto-select anggota jika ada dari parameter
+    @if(isset($selectedAnggotaId) && $selectedAnggotaId)
+        // Load anggota data untuk auto-selection
+        $.ajax({
+            url: '{{ route("peminjaman.search-anggota") }}',
+            dataType: 'json',
+            data: {
+                search: '{{ $selectedAnggotaId }}',
+                exact_id: '{{ $selectedAnggotaId }}'
+            },
+            success: function(data) {
+                if (data.length > 0) {
+                    const anggota = data[0];
+                    const option = new Option(
+                        anggota.nomor_anggota + ' - ' + anggota.nama_lengkap + ' (' + anggota.kelas + ')',
+                        anggota.id,
+                        true,
+                        true
+                    );
+                    $('#anggota_id').append(option).trigger('change');
+                }
+            }
+        });
+    @endif
 
     // Initialize Select2 for Buku
     $('.select2-buku').select2({
@@ -112,6 +148,29 @@ $(document).ready(function() {
         placeholder: 'Pilih Buku',
         allowClear: true,
         width: '100%',
+        ajax: {
+            url: '{{ route("peminjaman.search-buku") }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    search: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data.map(function(item) {
+                        return {
+                            id: item.id,
+                            text: item.judul + ' (' + item.kode_buku + ') - Stok: ' + item.stok_tersedia,
+                            data: item
+                        };
+                    })
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
         language: {
             noResults: function() {
                 return "Tidak ada buku ditemukan";

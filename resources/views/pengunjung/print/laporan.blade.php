@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan {{ ucwords($type) }}</title>
+    <title>Laporan Pengunjung</title>
     <style>
         body { 
             font-family: sans-serif; 
@@ -49,7 +49,7 @@
         <button onclick="window.print()" class="btn">Cetak Laporan</button>
     </div>
 
-    <h4>DATA PEMINJAM BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
+    <h4>DATA PENGUNJUNG PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
     <h5>TAHUN PELAJARAN {{ $tahunAjaran }}/{{ $tahunAjaran + 1 }}</h5>
     
     @if(!empty($summaryData))
@@ -58,9 +58,9 @@
                 <tr>
                     <th rowspan="2" class="text-center">No</th>
                     <th rowspan="2" class="text-center">Bulan</th>
-                    <th colspan="6" class="text-center">Kelas VII</th>
-                    <th colspan="6" class="text-center">Kelas VIII</th>
-                    <th colspan="6" class="text-center">Kelas IX</th>
+                    <th colspan="5" class="text-center">Kelas VII</th>
+                    <th colspan="4" class="text-center">Kelas VIII</th>
+                    <th colspan="5" class="text-center">Kelas IX</th>
                     <th rowspan="2" class="text-center">Jumlah</th>
                 </tr>
                 <tr>
@@ -69,19 +69,15 @@
                     <th class="text-center">VIIC</th>
                     <th class="text-center">VIID</th>
                     <th class="text-center">VIIE</th>
-                    <th class="text-center">Jlh</th>
                     <th class="text-center">VIIIA</th>
                     <th class="text-center">VIIIB</th>
                     <th class="text-center">VIIIC</th>
                     <th class="text-center">VIIID</th>
-                    <th class="text-center">VIIIE</th>
-                    <th class="text-center">Jlh</th>
                     <th class="text-center">IXA</th>
                     <th class="text-center">IXB</th>
                     <th class="text-center">IXC</th>
                     <th class="text-center">IXD</th>
                     <th class="text-center">IXE</th>
-                    <th class="text-center">Jlh</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,19 +91,15 @@
                     <td class="text-center">{{ $bulanData['kelas']['VII C'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VII D'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VII E'] ?? 0 }}</td>
-                    <td class="text-center fw-bold">{{ array_sum(array_intersect_key($bulanData['kelas'], array_flip(['VII A', 'VII B', 'VII C', 'VII D', 'VII E']))) }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII A'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII B'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII C'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['VIII D'] ?? 0 }}</td>
-                    <td class="text-center">{{ $bulanData['kelas']['VIII E'] ?? 0 }}</td>
-                    <td class="text-center fw-bold">{{ array_sum(array_intersect_key($bulanData['kelas'], array_flip(['VIII A', 'VIII B', 'VIII C', 'VIII D', 'VIII E']))) }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX A'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX B'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX C'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX D'] ?? 0 }}</td>
                     <td class="text-center">{{ $bulanData['kelas']['IX E'] ?? 0 }}</td>
-                    <td class="text-center fw-bold">{{ array_sum(array_intersect_key($bulanData['kelas'], array_flip(['IX A', 'IX B', 'IX C', 'IX D', 'IX E']))) }}</td>
                     <td class="text-center fw-bold">{{ array_sum($bulanData['kelas']) }}</td>
                 </tr>
                 @endforeach
@@ -118,36 +110,23 @@
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VII C'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VII D'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VII E'] ?? 0; }) }}</td>
-                    <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { 
-                        $kelasVII = ['VII A', 'VII B', 'VII C', 'VII D', 'VII E'];
-                        return array_sum(array_intersect_key($bulan['kelas'], array_flip($kelasVII)));
-                    }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII A'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII B'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII C'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII D'] ?? 0; }) }}</td>
-                    <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['VIII E'] ?? 0; }) }}</td>
-                    <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { 
-                        $kelasVIII = ['VIII A', 'VIII B', 'VIII C', 'VIII D', 'VIII E'];
-                        return array_sum(array_intersect_key($bulan['kelas'], array_flip($kelasVIII)));
-                    }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX A'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX B'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX C'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX D'] ?? 0; }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return $bulan['kelas']['IX E'] ?? 0; }) }}</td>
-                    <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { 
-                        $kelasIX = ['IX A', 'IX B', 'IX C', 'IX D', 'IX E'];
-                        return array_sum(array_intersect_key($bulan['kelas'], array_flip($kelasIX)));
-                    }) }}</td>
                     <td class="text-center fw-bold">{{ $summaryData->sum(function($bulan) { return array_sum($bulan['kelas']); }) }}</td>
                 </tr>
             </tbody>
         </table>
     @else
-        <h3>Laporan Detail Peminjaman</h3>
+        <h3>Laporan Pengunjung</h3>
         <p style="text-align: center;">Tahun Ajaran {{ $tahunAjaran }}/{{ $tahunAjaran + 1 }}</p>
-        @include('laporan.partials.peminjaman', ['data' => $data])
+        <p style="text-align: center;">Tidak ada data pengunjung untuk periode yang dipilih.</p>
     @endif
 
 </body>

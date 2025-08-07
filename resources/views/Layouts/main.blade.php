@@ -29,6 +29,9 @@
             <div class="nav-item">
                 <div class="px-3 py-2 small fw-bold text-muted">TRANSAKSI</div>
             </div>
+            <a class="nav-link @if(request()->routeIs('pengunjung.*') && !request()->routeIs('pengunjung.laporan') && !request()->routeIs('pengunjung.print-laporan')) active @endif" href="{{ route('pengunjung.index') }}">
+                <i class="fas fa-user-clock me-2"></i>Data Pengunjung
+            </a>
             <a class="nav-link @if(request()->routeIs('peminjaman.*')) active @endif" href="{{ route('peminjaman.index') }}">
                 <i class="fas fa-exchange-alt me-2"></i>Peminjaman
             </a>
@@ -42,7 +45,7 @@
             <div class="nav-item">
                 <div class="px-3 py-2 small fw-bold text-muted">LAPORAN</div>
             </div>
-            <a class="nav-link @if(request()->routeIs('laporan.*')) active @endif" href="{{ route('laporan.index') }}">
+            <a class="nav-link @if(request()->routeIs('laporan.*') || request()->routeIs('pengunjung.laporan') || request()->routeIs('pengunjung.print-laporan')) active @endif" href="{{ route('laporan.index') }}">
                 <i class="fas fa-chart-bar me-2"></i>Laporan
             </a>
         </nav>
@@ -80,6 +83,9 @@
             <div class="nav-item">
                 <div class="text-muted px-3 py-2 small fw-bold">TRANSAKSI</div>
             </div>
+            <a class="nav-link @if(request()->routeIs('pengunjung.*') && !request()->routeIs('pengunjung.laporan') && !request()->routeIs('pengunjung.print-laporan')) active @endif" href="{{ route('pengunjung.index') }}">
+                <i class="fas fa-user-clock me-2"></i>Data Pengunjung
+            </a>
             <a class="nav-link @if(request()->routeIs('peminjaman.*')) active @endif" href="{{ route('peminjaman.index') }}">
                 <i class="fas fa-exchange-alt me-2"></i>Peminjaman
             </a>
@@ -93,7 +99,7 @@
             <div class="nav-item">
                 <div class="text-muted px-3 py-2 small fw-bold">LAPORAN</div>
             </div>
-            <a class="nav-link @if(request()->routeIs('laporan.*')) active @endif" href="{{ route('laporan.index') }}">
+            <a class="nav-link @if(request()->routeIs('laporan.*') || request()->routeIs('pengunjung.laporan') || request()->routeIs('pengunjung.print-laporan')) active @endif" href="{{ route('laporan.index') }}">
                 <i class="fas fa-chart-bar me-2"></i>Laporan
             </a>
         </nav>

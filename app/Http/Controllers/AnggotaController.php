@@ -110,6 +110,9 @@ class AnggotaController extends Controller
 
     public function show(Anggota $anggota)
     {
+        if (request()->expectsJson()) {
+            return response()->json($anggota);
+        }
         $anggota->load(['peminjamans.buku', 'peminjamans.dendaRecord']);
         return view('anggota.show', compact('anggota'));
     }

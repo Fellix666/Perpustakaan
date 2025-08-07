@@ -53,9 +53,7 @@
                     <div class="col">
                         <div class="text-uppercase text-muted small fw-bold">Sedang Dipinjam</div>
                         <div class="h2 mb-0 text-warning">{{ number_format($bukuDipinjam) }}</div>
-                        <div class="small text-warning">
-                            <i class="fas fa-clock me-1"></i>Dalam sirkulasi
-                        </div>
+                        <div class="small text-muted">Dalam sirkulasi</div>
                     </div>
                     <div class="col-auto">
                         <div class="bg-warning bg-opacity-10 rounded-circle p-3">
@@ -74,9 +72,7 @@
                     <div class="col">
                         <div class="text-uppercase text-muted small fw-bold">Total Denda</div>
                         <div class="h2 mb-0 text-danger">Rp {{ number_format($totalDenda) }}</div>
-                        <div class="small text-danger">
-                            <i class="fas fa-exclamation-triangle me-1"></i>Belum dibayar
-                        </div>
+                        <div class="small text-danger">Belum dibayar</div>
                     </div>
                     <div class="col-auto">
                         <div class="bg-danger bg-opacity-10 rounded-circle p-3">
@@ -89,26 +85,71 @@
     </div>
 </div>
 
-<!-- Charts Section -->
-<div class="row mb-4">
-    <div class="col-lg-8 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-primary"></i>Trend Peminjaman 7 Hari Terakhir</h5>
+<!-- Charts Row -->
+<div class="row">
+    <!-- Trend Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-chart-line me-2"></i>Trend Peminjaman 7 Hari Terakhir
+                </h6>
             </div>
             <div class="card-body">
-                <canvas id="trendChart" height="100" style="width: 100%; height: 300px;"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="trendChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-success"></i>Status Peminjaman</h5>
+    <!-- Status Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>Status Peminjaman
+                </h6>
             </div>
             <div class="card-body">
-                <canvas id="statusChart" height="100" style="width: 100%; height: 250px;"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row -->
+<div class="row">
+    <!-- Activity Chart -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-chart-bar me-2"></i>Aktivitas Hari Ini
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kategori Chart -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-chart-bar me-2"></i>Kategori Buku Terpopuler
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="kategoriChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -116,307 +157,362 @@
 
 <!-- Recent Activity -->
 <div class="row">
-    <div class="col-lg-8 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Peminjaman Terbaru</h5>
-                <a href="{{ route('peminjaman.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header py-3">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-clock me-2"></i>Peminjaman Terbaru
+                </h6>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Anggota</th>
-                                <th>Buku</th>
-                                <th>Tanggal Pinjam</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($peminjamanTerbaru as $peminjaman)
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm me-3">
-                                            @if($peminjaman->anggota->foto)
-                                                <img src="{{ asset('storage/anggota/' . $peminjaman->anggota->foto) }}" 
-                                                     class="rounded-circle" width="32" height="32" alt="Foto"
-                                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('fallback-icon'); this.nextElementSibling.style.display='flex';">
-                                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center fallback-icon" 
-                                                     style="width: 32px; height: 32px; display: none !important;">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                            @else
-                                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
-                                                     style="width: 32px; height: 32px;">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold">{{ $peminjaman->anggota->nama_lengkap }}</div>
-                                            <small class="text-muted">{{ $peminjaman->anggota->kelas }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <div class="fw-bold">{{ $peminjaman->buku->judul }}</div>
-                                        <small class="text-muted">{{ $peminjaman->buku->kategori->nama_kategori ?? 'Tanpa Kategori' }}</small>
-                                    </div>
-                                </td>
-                                <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                                <td>
-                                    @if($peminjaman->status_realtime == 'dikembalikan')
-                                        <span class="badge bg-success">Dikembalikan</span>
-                                    @elseif($peminjaman->status_realtime == 'terlambat')
-                                        <span class="badge bg-danger">Terlambat</span>
-                                    @else
-                                        <span class="badge bg-primary">Dipinjam</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-4">
-                                    <div class="text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                                        <p>Belum ada data peminjaman</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            <div class="card-body">
+                @if($peminjamanTerbaru->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Anggota</th>
+                                    <th>Buku</th>
+                                    <th>Tanggal</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($peminjamanTerbaru as $peminjaman)
+                                <tr>
+                                    <td>{{ $peminjaman->anggota->nama_lengkap }}</td>
+                                    <td>{{ Str::limit($peminjaman->buku->judul, 30) }}</td>
+                                    <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
+                                    <td>
+                                        @if($peminjaman->status_realtime == 'dikembalikan')
+                                            <span class="badge bg-success">Dikembalikan</span>
+                                        @elseif($peminjaman->status_realtime == 'terlambat')
+                                            <span class="badge bg-danger">Terlambat</span>
+                                        @else
+                                            <span class="badge bg-primary">Dipinjam</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-muted mb-0">Belum ada data peminjaman.</p>
+                @endif
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h5 class="mb-0"><i class="fas fa-star me-2 text-warning"></i>Buku Terpopuler</h5>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header py-3">
+                <h6 class="m-0 fw-bold text-primary">
+                    <i class="fas fa-star me-2"></i>Buku Terpopuler
+                </h6>
             </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    @forelse($bukuTerpopuler as $buku)
-                    <div class="list-group-item border-0 d-flex align-items-center">
-                        <div class="avatar-sm me-3">
-                            @if($buku->cover)
-                                <img src="{{ asset('storage/buku/' . $buku->cover) }}" 
-                                     class="rounded" width="40" height="50" alt="Cover"
-                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('fallback-icon'); this.nextElementSibling.style.display='flex';">
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center fallback-icon" 
-                                     style="width: 40px; height: 50px; display: none !important;">
-                                    <i class="fas fa-book text-muted"></i>
-                                </div>
-                            @else
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                     style="width: 40px; height: 50px;">
-                                    <i class="fas fa-book text-muted"></i>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-bold">{{ $buku->judul }}</div>
-                            <small class="text-muted">{{ $buku->total_peminjaman ?? 0 }} kali dipinjam</small>
-                        </div>
+            <div class="card-body">
+                @if($bukuTerpopuler->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Judul</th>
+                                    <th>Kategori</th>
+                                    <th>Total Pinjam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($bukuTerpopuler as $buku)
+                                <tr>
+                                    <td>{{ Str::limit($buku->judul, 30) }}</td>
+                                    <td>{{ $buku->kategori->nama_kategori ?? '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ $buku->total_peminjaman }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    @empty
-                    <div class="list-group-item border-0 text-center py-4">
-                        <div class="text-muted">
-                            <i class="fas fa-book fa-2x mb-2"></i>
-                            <p class="mb-0">Belum ada data buku terpopuler</p>
-                        </div>
-                    </div>
-                    @endforelse
-                </div>
+                @else
+                    <p class="text-muted mb-0">Belum ada data buku terpopuler.</p>
+                @endif
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('scripts')
-<!-- Chart.js dari CDN -->
+@section('scripts')
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Inline JavaScript -->
 <script>
-// Data dari controller dengan validasi yang lebih ketat
-const trendData = @json(isset($trendPeminjaman) ? $trendPeminjaman : []);
-const statusData = @json(isset($statusPeminjaman) ? $statusPeminjaman : []);
+// Data dari controller
+const trendData = @json($trendPeminjaman ?? []);
+const statusData = @json($statusPeminjaman ?? []);
+const kategoriData = @json($kategoriTerpopuler ?? []);
+const pengunjungHariIni = {{ $pengunjungHariIni ?? 0 }};
+const peminjamanHariIni = {{ $peminjamanHariIni ?? 0 }};
+const pengembalianHariIni = {{ $pengembalianHariIni ?? 0 }};
 
-console.log('Trend Data:', trendData);
-console.log('Status Data:', statusData);
+// Create charts immediately
+if (typeof Chart !== 'undefined') {
+    createCharts();
+}
 
-// Trend Chart
-function initTrendChart() {
+function createCharts() {
     try {
-        const canvas = document.getElementById('trendChart');
-        if (!canvas) {
-            console.error('Canvas trendChart tidak ditemukan');
-            return;
-        }
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            console.error('Context tidak dapat dibuat');
-            return;
-        }
-        
-        // Pastikan data ada
-        const labels = trendData && trendData.length > 0 ? trendData.map(item => item.date) : ['01/01', '02/01', '03/01', '04/01', '05/01', '06/01', '07/01'];
-        const data = trendData && trendData.length > 0 ? trendData.map(item => item.count) : [0, 0, 0, 0, 0, 0, 0];
-        
-        console.log('Membuat trend chart dengan labels:', labels, 'data:', data);
-        
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Peminjaman',
-                    data: data,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: 'rgb(75, 192, 192)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // Trend Chart
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx) {
+            const labels = trendData.length > 0 ? trendData.map(item => item.date) : ['01/01', '02/01', '03/01', '04/01', '05/01', '06/01', '07/01'];
+            const data = trendData.length > 0 ? trendData.map(item => item.count) : [0, 0, 0, 0, 0, 0, 0];
+            
+            const trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peminjaman',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: 'rgb(75, 192, 192)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0,0,0,0.1)'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: 'rgb(75, 192, 192)'
                         }
                     }
                 }
-            }
-        });
-        
-        console.log('Trend chart berhasil dibuat');
-    } catch (error) {
-        console.error('Error membuat trend chart:', error);
-    }
-}
+            });
+        }
 
-// Status Chart
-function initStatusChart() {
-    try {
-        const canvas = document.getElementById('statusChart');
-        if (!canvas) {
-            console.error('Canvas statusChart tidak ditemukan');
-            return;
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            const labels = Object.keys(statusData);
+            const data = Object.values(statusData);
+            
+            const statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(255, 99, 132, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
         }
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            console.error('Context tidak dapat dibuat');
-            return;
-        }
-        
-        // Pastikan data ada dan konversi ke object jika perlu
-        let statusDataObj = {};
-        if (Array.isArray(statusData) && statusData.length > 0) {
-            statusDataObj = statusData;
-        } else if (typeof statusData === 'object' && statusData !== null) {
-            statusDataObj = statusData;
-        } else {
-            statusDataObj = {
-                'Dipinjam': 0,
-                'Dikembalikan': 0,
-                'Terlambat': 0
-            };
-        }
-        
-        const labels = Object.keys(statusDataObj).length > 0 ? Object.keys(statusDataObj) : ['Dipinjam', 'Dikembalikan', 'Terlambat'];
-        const data = Object.keys(statusDataObj).length > 0 ? Object.values(statusDataObj) : [0, 0, 0];
-        
-        console.log('Membuat status chart dengan labels:', labels, 'data:', data);
-        
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: [
-                        'rgba(255, 206, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(255, 99, 132, 0.8)'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
+
+        // Activity Chart
+        const activityCtx = document.getElementById('activityChart');
+        if (activityCtx) {
+            const activityChart = new Chart(activityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pengunjung', 'Peminjaman', 'Pengembalian'],
+                    datasets: [{
+                        label: 'Aktivitas Hari Ini',
+                        data: [pengunjungHariIni, peminjamanHariIni, pengembalianHariIni],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(255, 159, 64, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        }
                     }
                 }
-            }
-        });
-        
-        console.log('Status chart berhasil dibuat');
+            });
+        }
+
+        // Kategori Chart
+        const kategoriCtx = document.getElementById('kategoriChart');
+        if (kategoriCtx) {
+            const labels = kategoriData.length > 0 ? kategoriData.map(item => item.nama_kategori) : ['Kategori 1', 'Kategori 2', 'Kategori 3'];
+            const data = kategoriData.length > 0 ? kategoriData.map(item => item.total_peminjaman) : [0, 0, 0];
+            
+            const kategoriChart = new Chart(kategoriCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Peminjaman',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                color: '#666'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666',
+                                maxRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
     } catch (error) {
-        console.error('Error membuat status chart:', error);
+        console.error('Error creating charts:', error);
     }
 }
-
-// Initialize charts when page loads
-function initializeCharts() {
-    console.log('Initializing charts...');
-    initTrendChart();
-    initStatusChart();
-}
-
-// Tunggu sampai DOM siap
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing charts...');
-        setTimeout(initializeCharts, 100);
-    });
-} else {
-    console.log('DOM already loaded, initializing charts immediately...');
-    setTimeout(initializeCharts, 100);
-}
-
-// Fallback untuk memastikan chart dibuat
-setTimeout(initializeCharts, 500);
 </script>
-@endpush
-
-@push('styles')
-<style>
-    .fallback-icon {
-        display: none !important;
-    }
-    
-    .avatar-sm img {
-        object-fit: cover;
-    }
-</style>
-@endpush
+@endsection

@@ -63,9 +63,9 @@
                                     <tr>
                                         <th rowspan="2" class="text-center align-middle">No</th>
                                         <th rowspan="2" class="text-center align-middle">Bulan</th>
-                                        <th colspan="5" class="text-center">Kelas VII</th>
-                                        <th colspan="5" class="text-center">Kelas VIII</th>
-                                        <th colspan="5" class="text-center">Kelas IX</th>
+                                        <th colspan="6" class="text-center">Kelas VII</th>
+                                        <th colspan="6" class="text-center">Kelas VIII</th>
+                                        <th colspan="6" class="text-center">Kelas IX</th>
                                         <th rowspan="2" class="text-center align-middle">Jumlah</th>
                                     </tr>
                                     <tr>

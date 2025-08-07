@@ -1,0 +1,160 @@
+<mxfile host="65bd71144e">
+    <diagram name="Use Case Diagram" id="use-case-diagram">
+        <mxGraphModel dx="1019" dy="507" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="5" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+                    <mxGeometry x="5" width="860" height="860" as="geometry"/>
+                </mxCell>
+                <mxCell id="admin-actor" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="255" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="kepala-actor" value="Kepala Perpustakaan" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="520" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="data-master-usecase" value="Data Master" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="60" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="transaksi-usecase" value="Transaksi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="270" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="laporan-usecase" value="Laporan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="520" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="anggota-usecase" value="Data Anggota" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="60" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="buku-usecase" value="Data Buku" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="130" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="kategori-usecase" value="Data Kategori" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="200" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="rak-usecase" value="Data Rak" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="270" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="peminjaman-usecase" value="Peminjaman" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="380" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="pengembalian-usecase" value="Pengembalian" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="450" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="denda-usecase" value="Denda" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="520" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="laporan-transaksi-usecase" value="Laporan Transaksi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="630" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="laporan-denda-usecase" value="Laporan Denda" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="700" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="analisis-usecase" value="Analisis Peminjaman" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="770" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="admin-login" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="admin-actor" target="6" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="230" as="sourcePoint"/>
+                        <mxPoint x="250" y="180" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="admin-data-master" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="6" target="data-master-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="230" as="sourcePoint"/>
+                        <mxPoint x="400" y="130" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="admin-transaksi" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="6" target="transaksi-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="230" as="sourcePoint"/>
+                        <mxPoint x="400" y="230" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="admin-laporan" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;" parent="1" target="laporan-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="290" y="290" as="sourcePoint"/>
+                        <mxPoint x="400" y="330" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="kepala-login" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="kepala-actor" target="8" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="190" y="390" as="sourcePoint"/>
+                        <mxPoint x="240" y="340" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="data-master-anggota" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="data-master-usecase" target="anggota-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="140" as="sourcePoint"/>
+                        <mxPoint x="610" y="90" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="data-master-buku" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="data-master-usecase" target="buku-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="140" as="sourcePoint"/>
+                        <mxPoint x="610" y="160" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="data-master-kategori" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="data-master-usecase" target="kategori-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="140" as="sourcePoint"/>
+                        <mxPoint x="610" y="230" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="data-master-rak" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="data-master-usecase" target="rak-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="140" as="sourcePoint"/>
+                        <mxPoint x="610" y="300" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="transaksi-peminjaman" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="transaksi-usecase" target="peminjaman-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="260" as="sourcePoint"/>
+                        <mxPoint x="610" y="410" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="transaksi-pengembalian" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="transaksi-usecase" target="pengembalian-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="260" as="sourcePoint"/>
+                        <mxPoint x="610" y="480" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="transaksi-denda" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="transaksi-usecase" target="denda-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="530" y="260" as="sourcePoint"/>
+                        <mxPoint x="610" y="550" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="laporan-transaksi-report" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="laporan-usecase" target="laporan-transaksi-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="540" y="510" as="sourcePoint"/>
+                        <mxPoint x="620" y="770" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="laporan-denda-report" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="laporan-usecase" target="laporan-denda-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="540" y="510" as="sourcePoint"/>
+                        <mxPoint x="620" y="840" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="laporan-analisis" value="Include" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;dashed=1;" parent="1" source="laporan-usecase" target="analisis-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="540" y="510" as="sourcePoint"/>
+                        <mxPoint x="620" y="910" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="6" value="&#xa;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;Login&lt;/span&gt;&#xa;&#xa;" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="260" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="&#xa;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;Login&lt;/span&gt;&#xa;&#xa;" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="525" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="8" target="laporan-usecase" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="60" y="394" as="sourcePoint"/>
+                        <mxPoint x="452" y="542" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

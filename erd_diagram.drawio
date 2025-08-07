@@ -1,0 +1,106 @@
+<mxfile host="65bd71144e">
+    <diagram name="ERD Diagram" id="erd-diagram">
+        <mxGraphModel dx="0" dy="349" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="ENTITY RELATIONSHIP DIAGRAM (ERD)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="20" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="admins-list" value="ADMINS&#xa;• id (PK)&#xa;• name&#xa;• email&#xa;• password&#xa;• role&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="80" width="180" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="anggotas-list" value="ANGGOTAS&#xa;• id (PK)&#xa;• nomor_anggota&#xa;• nama_lengkap&#xa;• tempat_lahir&#xa;• tanggal_lahir&#xa;• jenis_kelamin&#xa;• kelas&#xa;• alamat&#xa;• tahun_ajaran_masuk&#xa;• status&#xa;• foto&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="630" width="180" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="bukus-list" value="BUKUS&#xa;• id (PK)&#xa;• kode_buku&#xa;• isbn&#xa;• judul&#xa;• pengarang&#xa;• penerbit&#xa;• tahun_terbit&#xa;• jumlah_halaman&#xa;• stok_total&#xa;• stok_tersedia&#xa;• kategori_id (FK)&#xa;• rak_id (FK)&#xa;• status&#xa;• cover&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="80" width="180" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="kategoris-list" value="KATEGORIS&#xa;• id (PK)&#xa;• kode_kategori&#xa;• nama_kategori&#xa;• deskripsi&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="80" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="raks-list" value="RAKS&#xa;• id (PK)&#xa;• kode_rak&#xa;• nama_rak&#xa;• lokasi&#xa;• kapasitas&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="240" width="180" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="peminjamans-list" value="PEMINJAMANS&#xa;• id (PK)&#xa;• kode_peminjaman&#xa;• anggota_id (FK)&#xa;• buku_id (FK)&#xa;• tanggal_pinjam&#xa;• tanggal_kembali_rencana&#xa;• tanggal_kembali_aktual&#xa;• status&#xa;• keterangan&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="380" width="180" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="dendas-list" value="DENDAS&#xa;• id (PK)&#xa;• peminjaman_id (FK)&#xa;• hari_terlambat&#xa;• denda_per_hari&#xa;• total_denda&#xa;• status_bayar&#xa;• tanggal_bayar&#xa;• created_at&#xa;• updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontStyle=1;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="380" width="180" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="bukus-kategoris-line" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;" parent="1" source="bukus-list" target="kategoris-list" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="690" y="200" as="sourcePoint"/>
+                        <mxPoint x="740" y="140" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="bukus-kategoris-label" value="N:1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="170" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="bukus-raks-line" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;" parent="1" source="bukus-list" target="raks-list" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="690" y="320" as="sourcePoint"/>
+                        <mxPoint x="740" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="bukus-raks-label" value="N:1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="315" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="peminjamans-anggotas-line" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;" parent="1" source="peminjamans-list" target="anggotas-list" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="240" y="380" as="sourcePoint"/>
+                        <mxPoint x="370" y="300" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="peminjamans-anggotas-label" value="N:1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="340" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="peminjamans-bukus-line" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;" parent="1" source="peminjamans-list" target="bukus-list" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="330" y="380" as="sourcePoint"/>
+                        <mxPoint x="600" y="320" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="peminjamans-bukus-label" value="N:1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="350" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="dendas-peminjamans-line" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#000000;" parent="1" source="dendas-list" target="peminjamans-list" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="380" y="380" as="sourcePoint"/>
+                        <mxPoint x="330" y="380" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="dendas-peminjamans-label" value="N:1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="360" width="30" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-bukus-kategoris" value="belongs to" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="150" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-bukus-raks" value="located in" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="295" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-peminjamans-anggotas" value="borrowed by" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="320" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-peminjamans-bukus" value="borrows" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="460" y="330" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-dendas-peminjamans" value="generated from" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="340" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="600" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-pk" value="PK = Primary Key" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="630" width="120" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-fk" value="FK = Foreign Key" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="650" width="120" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-n1" value="N:1 = Many to One" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="670" width="120" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

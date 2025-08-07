@@ -17,14 +17,16 @@ class PeminjamanController extends Controller
         return view('peminjaman.index', compact('peminjamans'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
-        $anggotas = Anggota::where('status', 'aktif')->orderBy('nama_lengkap')->get();
-        $bukus = Buku::where('status', 'tersedia')->where('stok_tersedia', '>', 0)->orderBy('judul')->get();
-        return view('peminjaman.create', compact('anggotas', 'bukus'));
+        
+        // Jika ada anggota_id dari parameter (dari pengunjung), set sebagai selected
+        $selectedAnggotaId = $request->get('anggota_id');
+        
+        return view('peminjaman.create', compact('selectedAnggotaId'));
     }
 
     public function store(Request $request)
@@ -114,9 +116,73 @@ class PeminjamanController extends Controller
             'tanggal_pinjam' => 'required|date',
             'tanggal_kembali_rencana' => 'required|date|after:tanggal_pinjam',
         ]);
-        $peminjaman->update($request->only(['anggota_id', 'buku_id', 'tanggal_pinjam', 'tanggal_kembali_rencana', 'keterangan']));
+
+        $buku = Buku::find($request->buku_id);
+        if ($buku->stok_tersedia <= 0) {
+            return back()->with('error', 'Stok buku tidak tersedia.');
+        }
+
+        $peminjaman->update([
+            'anggota_id' => $request->anggota_id,
+            'buku_id' => $request->buku_id,
+            'tanggal_pinjam' => $request->tanggal_pinjam,
+            'tanggal_kembali_rencana' => $request->tanggal_kembali_rencana,
+        ]);
+
         return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
 
+    // Method untuk mencari anggota
+    public function searchAnggota(Request $request)
+    {
+        $search = $request->get('search');
+        $exactId = $request->get('exact_id');
+        
+        if (empty($search) && empty($exactId)) {
+            return response()->json([]);
+        }
+        
+        $query = Anggota::where('status', 'aktif');
+        
+        if ($exactId) {
+            // Jika ada exact_id, cari berdasarkan ID
+            $query->where('id', $exactId);
+        } else {
+            // Jika tidak ada exact_id, cari berdasarkan search term
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_anggota', 'like', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('kelas', 'like', "%{$search}%");
+            });
+        }
+        
+        $anggotas = $query->orderBy('nama_lengkap')
+                          ->limit(10)
+                          ->get(['id', 'nomor_anggota', 'nama_lengkap', 'kelas']);
 
+        return response()->json($anggotas);
+    }
+
+    // Method untuk mencari buku
+    public function searchBuku(Request $request)
+    {
+        $search = $request->get('search');
+        
+        if (empty($search)) {
+            return response()->json([]);
+        }
+        
+        $bukus = Buku::where('status', 'tersedia')
+                     ->where('stok_tersedia', '>', 0)
+                     ->where(function($query) use ($search) {
+                         $query->where('judul', 'like', "%{$search}%")
+                               ->orWhere('kode_buku', 'like', "%{$search}%")
+                               ->orWhere('pengarang', 'like', "%{$search}%");
+                     })
+                     ->orderBy('judul')
+                     ->limit(10)
+                     ->get(['id', 'judul', 'kode_buku', 'pengarang', 'stok_tersedia']);
+
+        return response()->json($bukus);
+    }
 }

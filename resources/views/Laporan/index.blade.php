@@ -20,6 +20,9 @@
                 <a href="{{ route('laporan.transaksi') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-exchange-alt me-2 text-success"></i> Laporan Transaksi
                 </a>
+                <a href="{{ route('pengunjung.laporan') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user-clock me-2 text-info"></i> Laporan Pengunjung
+                </a>
                 <a href="{{ route('laporan.denda') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-exclamation-triangle me-2 text-warning"></i> Laporan Denda & Keterlambatan
                 </a>

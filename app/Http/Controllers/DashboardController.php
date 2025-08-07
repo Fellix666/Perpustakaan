@@ -6,6 +6,7 @@ use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Peminjaman;
 use App\Models\Denda;
+use App\Models\Pengunjung;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,10 @@ class DashboardController extends Controller
             })->count();
             
         $totalDenda = Denda::where('status_bayar', 'belum-dibayar')->sum('total_denda');
+        
+        // Data pengunjung hari ini
+        $pengunjungHariIni = Pengunjung::whereDate('tanggal', Carbon::today())->count();
+        $pengunjungPinjam = Pengunjung::where('tujuan_kunjungan', 'pinjam')->count();
         
         // Ambil 5 peminjaman terbaru yang unik
         $peminjamanTerbaru = Peminjaman::with(['anggota', 'buku'])
@@ -65,6 +70,16 @@ class DashboardController extends Controller
             'Terlambat' => Peminjaman::where('status', 'terlambat')->count()
         ];
         
+        // Data untuk grafik kategori buku terpopuler
+        $kategoriTerpopuler = DB::table('kategoris')
+            ->select('kategoris.nama_kategori', DB::raw('COUNT(peminjamans.id) as total_peminjaman'))
+            ->leftJoin('bukus', 'kategoris.id', '=', 'bukus.kategori_id')
+            ->leftJoin('peminjamans', 'bukus.id', '=', 'peminjamans.buku_id')
+            ->groupBy('kategoris.id', 'kategoris.nama_kategori')
+            ->orderBy('total_peminjaman', 'desc')
+            ->limit(5)
+            ->get();
+        
         // Fallback jika tidak ada data
         if (empty($trendPeminjaman)) {
             $trendPeminjaman = [
@@ -86,10 +101,17 @@ class DashboardController extends Controller
             ];
         }
         
+        if ($kategoriTerpopuler->isEmpty()) {
+            $kategoriTerpopuler = collect([
+                (object)['nama_kategori' => 'Tanpa Kategori', 'total_peminjaman' => 0]
+            ]);
+        }
+        
         // Debug: Log data untuk memastikan terkirim
         Log::info('Dashboard Data:', [
             'trendPeminjaman' => $trendPeminjaman,
             'statusPeminjaman' => $statusPeminjaman,
+            'kategoriTerpopuler' => $kategoriTerpopuler->toArray(),
             'bukuTerpopuler' => $bukuTerpopuler->map(function($buku) {
                 return [
                     'id' => $buku->id,
@@ -111,7 +133,8 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'totalAnggota', 'totalBuku', 'bukuTersedia', 'bukuDipinjam',
             'peminjamanHariIni', 'pengembalianHariIni', 'terlambat', 'totalDenda',
-            'peminjamanTerbaru', 'bukuTerpopuler', 'trendPeminjaman', 'statusPeminjaman'
+            'peminjamanTerbaru', 'bukuTerpopuler', 'trendPeminjaman', 'statusPeminjaman',
+            'pengunjungHariIni', 'pengunjungPinjam', 'kategoriTerpopuler'
         ));
     }
     

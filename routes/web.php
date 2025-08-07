@@ -11,6 +11,7 @@ use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\PengembalianController;
 use App\Http\Controllers\DendaController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\PengunjungController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('anggota/print-cards', [AnggotaController::class, 'printCards'])->name('anggota.print-cards');
     Route::get('anggota/print-cards-view', [AnggotaController::class, 'printCardsView'])->name('anggota.print-cards-view');
     Route::get('anggota/{anggota}', [AnggotaController::class, 'show'])->name('anggota.show');
+    Route::get('anggota/{anggota}/detail', [AnggotaController::class, 'show'])->name('anggota.detail')->middleware('web');
     Route::get('anggota/{anggota}/edit', [AnggotaController::class, 'edit'])->name('anggota.edit');
     Route::put('anggota/{anggota}', [AnggotaController::class, 'update'])->name('anggota.update');
     Route::delete('anggota/{anggota}', [AnggotaController::class, 'destroy'])->name('anggota.destroy');
@@ -83,6 +85,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
     Route::get('peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
     Route::post('peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+    Route::get('peminjaman/search-anggota', [PeminjamanController::class, 'searchAnggota'])->name('peminjaman.search-anggota');
+    Route::get('peminjaman/search-buku', [PeminjamanController::class, 'searchBuku'])->name('peminjaman.search-buku');
     Route::get('peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
     Route::get('peminjaman/{peminjaman}/edit', [PeminjamanController::class, 'edit'])->name('peminjaman.edit');
     Route::put('peminjaman/{peminjaman}', [PeminjamanController::class, 'update'])->name('peminjaman.update');
@@ -115,7 +119,17 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('laporan/analisis-peminjaman', [LaporanController::class, 'analisisPeminjaman'])->name('laporan.analisis-peminjaman');
     Route::get('laporan/print/analisis-peminjaman', [LaporanController::class, 'printAnalisisPeminjaman'])->name('laporan.print.analisis-peminjaman');
 
-
+    // --- Data Pengunjung ---
+    Route::get('pengunjung', [PengunjungController::class, 'index'])->name('pengunjung.index');
+    Route::get('pengunjung/create', [PengunjungController::class, 'create'])->name('pengunjung.create');
+    Route::post('pengunjung', [PengunjungController::class, 'store'])->name('pengunjung.store');
+    Route::get('pengunjung/search-anggota', [PengunjungController::class, 'searchAnggota'])->name('pengunjung.search-anggota');
+    Route::get('pengunjung/laporan', [PengunjungController::class, 'laporan'])->name('pengunjung.laporan');
+    Route::get('pengunjung/print/laporan', [PengunjungController::class, 'printLaporan'])->name('pengunjung.print-laporan');
+    Route::get('pengunjung/{pengunjung}', [PengunjungController::class, 'show'])->name('pengunjung.show');
+    Route::get('pengunjung/{pengunjung}/edit', [PengunjungController::class, 'edit'])->name('pengunjung.edit');
+    Route::put('pengunjung/{pengunjung}', [PengunjungController::class, 'update'])->name('pengunjung.update');
+    Route::delete('pengunjung/{pengunjung}', [PengunjungController::class, 'destroy'])->name('pengunjung.destroy');
 
 
     // --- Profil ---
