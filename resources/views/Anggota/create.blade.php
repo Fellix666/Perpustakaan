@@ -37,13 +37,14 @@
                                        id="nomor_anggota" 
                                        name="nomor_anggota" 
                                        value="{{ old('nomor_anggota') }}"
-                                       placeholder="Contoh: AGT001">
+                                       placeholder="Contoh: 1-PPUS-2025 atau 01-PPUS-2025"
+                                       required>
                                 @error('nomor_anggota')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="form-text">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Nomor anggota harus unik
+                                    Format: X-PPUS-YYYY atau XX-PPUS-YYYY (contoh: 1-PPUS-2025, 01-PPUS-2025). Sesuai ketentuan admin.
                                 </div>
                             </div>
                         </div>
@@ -265,15 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
     generateNomorAnggota();
 });
 
-function generateNomorAnggota() {
-    const nomorInput = document.getElementById('nomor_anggota');
-    if (!nomorInput.value) {
-        // Generate nomor anggota otomatis
-        const currentYear = new Date().getFullYear();
-        const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-        nomorInput.value = `AGT${currentYear}${randomNum}`;
-    }
-}
+
 
 function resetForm() {
     document.getElementById('formAnggota').reset();
@@ -311,6 +304,20 @@ document.getElementById('formAnggota').addEventListener('submit', function(e) {
     }
 });
 
+// Validasi format nomor anggota
+document.getElementById('nomor_anggota').addEventListener('input', function(e) {
+    const value = e.target.value;
+    const pattern = /^\d{1,7}-PPUS-\d{4}$/;
+    
+    if (value && !pattern.test(value)) {
+        this.classList.add('is-invalid');
+        this.setCustomValidity('Format harus: X-PPUS-YYYY atau XX-PPUS-YYYY atau XXX-PPUS-YYYY (contoh: 1-PPUS-2025, 01-PPUS-2025, 001-PPUS-2025)');
+    } else {
+        this.classList.remove('is-invalid');
+        this.setCustomValidity('');
+    }
+});
+
 // Format nomor telepon
 document.getElementById('telepon').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, ''); // Hapus semua non-digit
@@ -337,6 +344,8 @@ document.querySelectorAll('input, select, textarea').forEach(input => {
         }
     });
 });
+
+
 
 // Konfirmasi sebelum meninggalkan halaman jika ada perubahan
 let formChanged = false;

@@ -20,6 +20,7 @@ class Admin extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
     ];
 
     /**
@@ -41,4 +42,28 @@ class Admin extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Scope untuk admin yang aktif
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+
+    /**
+     * Cek apakah admin adalah super admin
+     */
+    public function isSuperAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Cek apakah admin adalah kepala perpustakaan
+     */
+    public function isKepalaPerpus()
+    {
+        return $this->role === 'kepala_perpus';
+    }
 }

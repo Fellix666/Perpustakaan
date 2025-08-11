@@ -80,7 +80,7 @@ class AnggotaController extends Controller
             abort(403, 'Akses hanya untuk admin');
         }
         $request->validate([
-            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota|regex:/^\d{2}-PPUS-\d{4}$/',
+            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota|regex:/^\d{1,7}-PPUS-\d{4}$/',
             'nama_lengkap' => 'required|max:100',
             'tempat_lahir' => 'required|max:100',
             'tanggal_lahir' => 'required|date',
@@ -134,7 +134,7 @@ class AnggotaController extends Controller
             abort(403, 'Akses hanya untuk admin');
         }
         $request->validate([
-            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id . '|regex:/^\d{2}-PPUS-\d{4}$/',
+            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id . '|regex:/^\d{1,7}-PPUS-\d{4}$/',
             'nama_lengkap' => 'required|max:100',
             'tempat_lahir' => 'required|max:100',
             'tanggal_lahir' => 'required|date',
@@ -354,14 +354,22 @@ class AnggotaController extends Controller
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
-        $request->validate(['file' => 'required|file|mimes:xlsx']);
+        $request->validate(['file' => 'required|file|mimes:xlsx|max:102400']);
         $file = $request->file('file');
         $rows = [];
         $errors = [];
+        
         try {
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
             $header = [];
+            $rowCount = 0;
+            
+            // OPTIMASI: Baca data per chunk untuk menghemat memory
+            $chunkSize = 100; // Proses 100 baris sekaligus
+            $imported = 0;
+            $totalRows = $sheet->getHighestRow();
+            
             foreach ($sheet->getRowIterator() as $i => $row) {
                 $cellIterator = $row->getCellIterator();
                 $cellIterator->setIterateOnlyExistingCells(false);
@@ -369,16 +377,45 @@ class AnggotaController extends Controller
                 foreach ($cellIterator as $cell) {
                     $cells[] = $cell->getValue();
                 }
+                
                 if ($i == 1) {
                     $header = $cells;
-                } else {
-                    $rows[] = array_combine($header, $cells);
+                    continue;
+                }
+                
+                $rows[] = array_combine($header, $cells);
+                $rowCount++;
+                
+                // Proses per chunk untuk menghemat memory
+                if ($rowCount % $chunkSize === 0 || $i === $totalRows) {
+                    $imported += $this->processImportChunk($rows, $errors);
+                    $rows = []; // Reset array untuk chunk berikutnya
+                    
+                    // Feedback progress untuk data besar
+                    if ($totalRows > 1000) {
+                        $progress = round(($i / $totalRows) * 100, 1);
+                        // Bisa ditambahkan progress bar di frontend
+                    }
                 }
             }
+            
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
         }
+        
+        $msg = $imported > 0 ? "$imported data anggota berhasil diimport." : 'Tidak ada data yang berhasil diimport.';
+        if ($errors) $msg .= " Sebagian gagal: ".implode(' | ', array_slice($errors, 0, 10)); // Batasi error yang ditampilkan
+        
+        return back()->with($imported > 0 ? 'success' : 'error', $msg);
+    }
+    
+    /**
+     * Memproses chunk data import untuk menghemat memory
+     */
+    private function processImportChunk($rows, &$errors)
+    {
         $imported = 0;
+        
         foreach ($rows as $i => $row) {
             if (empty($row['nomor_anggota']) || empty($row['nama_lengkap']) || empty($row['jenis_kelamin']) || empty($row['kelas']) || empty($row['alamat']) || empty($row['tanggal_daftar']) || empty($row['tahun_ajaran_masuk'])) {
                 $errors[] = "Baris ke-".($i+2).": Data wajib tidak lengkap.";
@@ -407,9 +444,8 @@ class AnggotaController extends Controller
                 $errors[] = "Baris ke-".($i+2).": Gagal import (".$e->getMessage().")";
             }
         }
-        $msg = $imported > 0 ? "$imported data anggota berhasil diimport." : 'Tidak ada data yang berhasil diimport.';
-        if ($errors) $msg .= " Sebagian gagal: ".implode(' | ', $errors);
-        return back()->with($imported > 0 ? 'success' : 'error', $msg);
+        
+        return $imported;
     }
     
     private function parseExcelDate($value)
@@ -457,7 +493,7 @@ class AnggotaController extends Controller
         }
 
         $request->validate([
-            'zip_file' => 'required|file|mimetypes:application/zip,application/x-zip-compressed|max:20480',
+            'zip_file' => 'required|file|mimetypes:application/zip,application/x-zip-compressed|max:102400',
         ]);
 
         $zip = new ZipArchive;

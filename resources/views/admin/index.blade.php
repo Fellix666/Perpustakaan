@@ -1,28 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Manage Admin - Perpustakaan SMP Negeri 1 Sanggau Ledo')
-@section('page-title', 'Manage Admin')
+@section('title', 'Manajemen Admin - Perpustakaan SMP Negeri 1 Sanggau Ledo')
+@section('page-title', 'Manajemen Admin')
 
 @section('breadcrumb')
 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-<li class="breadcrumb-item active">Manage Admin</li>
+<li class="breadcrumb-item active">Manajemen Admin</li>
 @endsection
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-lg-10">
+<div class="row">
+    <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Manage Admin</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-users-cog me-2"></i>Daftar Admin
+                </h5>
                 <a href="{{ route('admin.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus me-1"></i>Tambah Admin
                 </a>
             </div>
             <div class="card-body">
-                @php
-                    $admins = App\Models\Admin::orderBy('name')->get();
-                @endphp
-                
                 @if($admins->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
@@ -41,12 +39,7 @@
                                 @foreach($admins as $index => $admin)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td>
-                                        {{ $admin->name }}
-                                        @if($admin->id === auth('admin')->id())
-                                            <span class="badge bg-success ms-1">Saya</span>
-                                        @endif
-                                    </td>
+                                    <td>{{ $admin->name }}</td>
                                     <td>{{ $admin->email }}</td>
                                     <td>
                                         @if($admin->role === 'admin')
@@ -106,6 +99,10 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        {{ $admins->links() }}
+                    </div>
                 @else
                     <div class="text-center py-4">
                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
@@ -120,49 +117,3 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-<script>
-document.getElementById('formProfile').addEventListener('submit', function(e) {
-    const name = document.getElementById('name');
-    const email = document.getElementById('email');
-    let isValid = true;
-    if (!name.value.trim()) {
-        name.classList.add('is-invalid');
-        isValid = false;
-    } else {
-        name.classList.remove('is-invalid');
-    }
-    if (!email.value.trim()) {
-        email.classList.add('is-invalid');
-        isValid = false;
-    } else {
-        email.classList.remove('is-invalid');
-    }
-    if (!isValid) {
-        e.preventDefault();
-        Swal.fire({
-            icon: 'error',
-            title: 'Form Tidak Lengkap',
-            text: 'Silakan lengkapi semua field yang wajib diisi!',
-            timer: 3000,
-            showConfirmButton: false
-        });
-    }
-});
-
-document.getElementById('togglePasswordProfile').addEventListener('click', function() {
-    const passwordInput = document.getElementById('passwordProfile');
-    const icon = document.getElementById('iconPasswordProfile');
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-});
-</script>
-@endsection 

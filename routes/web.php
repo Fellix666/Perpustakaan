@@ -12,6 +12,7 @@ use App\Http\Controllers\PengembalianController;
 use App\Http\Controllers\DendaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengunjungController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -134,6 +135,16 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::put('pengunjung/{pengunjung}', [PengunjungController::class, 'update'])->name('pengunjung.update');
     Route::delete('pengunjung/{pengunjung}', [PengunjungController::class, 'destroy'])->name('pengunjung.destroy');
 
+    // --- Manajemen Admin (Hanya untuk Super Admin) ---
+    Route::get('admin/manage', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('admin/manage/create', [AdminController::class, 'create'])->name('admin.create');
+    Route::post('admin/manage', [AdminController::class, 'store'])->name('admin.store');
+    Route::get('admin/manage/{admin}', [AdminController::class, 'show'])->name('admin.show');
+    Route::get('admin/manage/{admin}/edit', [AdminController::class, 'edit'])->name('admin.edit');
+    Route::put('admin/manage/{admin}', [AdminController::class, 'update'])->name('admin.update');
+    Route::delete('admin/manage/{admin}', [AdminController::class, 'destroy'])->name('admin.destroy');
+    Route::post('admin/manage/{admin}/reset-password', [AdminController::class, 'resetPassword'])->name('admin.reset-password');
+    Route::post('admin/manage/{admin}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.toggle-status');
 
     // --- Profil ---
     Route::get('profile', [AuthController::class, 'profile'])->name('profile');

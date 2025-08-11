@@ -99,45 +99,11 @@ class DashboardController extends Controller
             ->get();
         
         // Fallback jika tidak ada data
-        if (empty($trendPeminjaman)) {
-            $trendPeminjaman = [
-                ['date' => '01/01', 'count' => 0],
-                ['date' => '02/01', 'count' => 0],
-                ['date' => '03/01', 'count' => 0],
-                ['date' => '04/01', 'count' => 0],
-                ['date' => '05/01', 'count' => 0],
-                ['date' => '06/01', 'count' => 0],
-                ['date' => '07/01', 'count' => 0]
-            ];
-        }
-        
-        if (empty($statusPeminjaman)) {
-            $statusPeminjaman = [
-                'Dipinjam' => 0,
-                'Dikembalikan' => 0,
-                'Terlambat' => 0
-            ];
-        }
-        
         if ($kategoriTerpopuler->isEmpty()) {
             $kategoriTerpopuler = collect([
                 (object)['nama_kategori' => 'Tanpa Kategori', 'total_peminjaman' => 0]
             ]);
         }
-        
-        // Debug: Log data untuk memastikan terkirim
-        Log::info('Dashboard Data:', [
-            'trendPeminjaman' => $trendPeminjaman,
-            'statusPeminjaman' => $statusPeminjaman,
-            'kategoriTerpopuler' => $kategoriTerpopuler->toArray(),
-            'bukuTerpopuler' => $bukuTerpopuler->map(function($buku) {
-                return [
-                    'id' => $buku->id,
-                    'judul' => $buku->judul,
-                    'total_peminjaman' => $buku->total_peminjaman
-                ];
-            })
-        ]);
         
         // Pastikan data tidak null
         if (is_null($trendPeminjaman)) {

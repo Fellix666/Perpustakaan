@@ -13,17 +13,24 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::create([
-            'name' => 'Administrator',
-            'email' => 'admin@perpustakaan.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-        ]);
-        Admin::create([
-            'name' => 'Kepala Perpustakaan',
-            'email' => 'kepala@perpustakaan.com',
-            'password' => Hash::make('password123'),
-            'role' => 'kepala_perpus',
-        ]);
+        Admin::firstOrCreate(
+            ['email' => 'admin@perpustakaan.com'],
+            [
+                'name' => 'Administrator',
+                'password' => Hash::make('AdminPerpus2024!'),
+                'role' => 'admin',
+                'status' => 'aktif',
+            ]
+        );
+        
+        Admin::firstOrCreate(
+            ['email' => 'kepala@perpustakaan.com'],
+            [
+                'name' => 'Kepala Perpustakaan',
+                'password' => Hash::make('KepalaPerpus2024!'),
+                'role' => 'kepala_perpus',
+                'status' => 'aktif',
+            ]
+        );
     }
 }

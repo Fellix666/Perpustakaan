@@ -334,15 +334,27 @@ class BukuController extends Controller
             abort(403, 'Akses hanya untuk admin');
         }
         $request->validate([
-            'file' => 'required|file|mimes:xlsx',
+            'file' => 'required|file|mimes:xlsx|max:102400',
         ]);
         $file = $request->file('file');
         $rows = [];
         $errors = [];
+        
         try {
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
             $header = [];
+            $rowCount = 0;
+            
+            // OPTIMASI: Baca data per chunk untuk menghemat memory
+            $chunkSize = 100; // Proses 100 baris sekaligus
+            $imported = 0;
+            $totalRows = $sheet->getHighestRow();
+            
+            // Ambil data kategori dan rak untuk mapping (cached)
+            $kategoris = \App\Models\Kategori::all()->keyBy('kode_kategori');
+            $raks = \App\Models\Rak::all()->keyBy('kode_rak');
+            
             foreach ($sheet->getRowIterator() as $i => $row) {
                 $cellIterator = $row->getCellIterator();
                 $cellIterator->setIterateOnlyExistingCells(false);
@@ -350,21 +362,51 @@ class BukuController extends Controller
                 foreach ($cellIterator as $cell) {
                     $cells[] = $cell->getValue();
                 }
+                
                 if ($i == 1) {
                     $header = $cells;
-                } else {
-                    $rows[] = array_combine($header, $cells);
+                    continue;
+                }
+                
+                $rows[] = array_combine($header, $cells);
+                $rowCount++;
+                
+                // Proses per chunk untuk menghemat memory
+                if ($rowCount % $chunkSize === 0 || $i === $totalRows) {
+                    $imported += $this->processBukuImportChunk($rows, $errors, $kategoris, $raks);
+                    $rows = []; // Reset array untuk chunk berikutnya
+                    
+                    // Feedback progress untuk data besar
+                    if ($totalRows > 1000) {
+                        $progress = round(($i / $totalRows) * 100, 1);
+                        // Bisa ditambahkan progress bar di frontend
+                    }
                 }
             }
+            
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
         }
         
-        // Ambil data kategori dan rak untuk mapping
-        $kategoris = \App\Models\Kategori::all()->keyBy('kode_kategori');
-        $raks = \App\Models\Rak::all()->keyBy('kode_rak');
-        
+        if ($imported > 0) {
+            $msg = "$imported data buku berhasil diimport.";
+            if ($errors) {
+                $msg .= " Sebagian gagal: ".implode(' | ', array_slice($errors, 0, 10)); // Batasi error yang ditampilkan
+                return back()->with('success', $msg);
+            }
+            return back()->with('success', $msg);
+        } else {
+            return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', array_slice($errors, 0, 10)));
+        }
+    }
+    
+    /**
+     * Memproses chunk data import buku untuk menghemat memory
+     */
+    private function processBukuImportChunk($rows, &$errors, $kategoris, $raks)
+    {
         $imported = 0;
+        
         foreach ($rows as $i => $row) {
             if (empty($row['kode_buku']) || empty($row['judul']) || empty($row['pengarang']) || empty($row['penerbit']) || empty($row['tahun_terbit']) || empty($row['stok_total'])) {
                 $errors[] = "Baris ke-".($i+2).": Data wajib tidak lengkap.";
@@ -434,16 +476,8 @@ class BukuController extends Controller
                 $errors[] = "Baris ke-".($i+2).": Gagal import (".$e->getMessage().")";
             }
         }
-        if ($imported > 0) {
-            $msg = "$imported data buku berhasil diimport.";
-            if ($errors) {
-                $msg .= " Sebagian gagal: ".implode(' | ', $errors);
-                return back()->with('success', $msg);
-            }
-            return back()->with('success', $msg);
-        } else {
-            return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', $errors));
-        }
+        
+        return $imported;
     }
     public function prosesUploadCoverZip(Request $request)
     {
@@ -451,7 +485,7 @@ class BukuController extends Controller
             abort(403, 'Akses hanya untuk admin');
         }
         $request->validate([
-            'zip_file' => 'required|file|mimetypes:application/zip,application/x-zip-compressed|max:20480',
+            'zip_file' => 'required|file|mimetypes:application/zip,application/x-zip-compressed|max:102400',
         ]);
 
         $zip = new ZipArchive;
