@@ -49,7 +49,7 @@
         <button onclick="window.print()" class="btn">Cetak Laporan</button>
     </div>
 
-    <h4>DATA PEMINJAM BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
+    <h4>DATA PEMINJAMAN BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
     <h5>TAHUN PELAJARAN {{ $tahunAjaran }}/{{ $tahunAjaran + 1 }}</h5>
     
     @if(!empty($summaryData))

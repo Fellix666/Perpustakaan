@@ -84,10 +84,18 @@
     @endif
     <h4>PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
     @if($jenisLaporan == 'pengumuman')
-        <p style="text-align: center; margin-top:0;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        @if($startDate && $endDate)
+            <p style="text-align: center; margin-top:0;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        @else
+            <p style="text-align: center; margin-top:0;">Periode: Semua Data</p>
+        @endif
     @else
         <p style="text-align: center; margin-top:0;">Tahun Ajaran: {{ $tahunAjaran }}/{{ $tahunAjaran ? (int)$tahunAjaran + 1 : '' }}</p>
-        <p style="text-align: center; margin-top:0;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        @if($startDate && $endDate)
+            <p style="text-align: center; margin-top:0;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+        @else
+            <p style="text-align: center; margin-top:0;">Periode: Semua Data</p>
+        @endif
     @endif
 
     <!-- Ringkasan -->
@@ -127,6 +135,8 @@
             </div>
         </div>
     </div>
+    
+
     @endif
 
     <!-- Tabel Data -->
@@ -138,16 +148,13 @@
                 <thead class="table-danger">
                     <tr>
                         <th class="text-center">No</th>
-                        <th>Kode Peminjaman</th>
                         <th>Anggota</th>
                         <th>Buku</th>
                         <th class="text-center">Tgl Pinjam</th>
-                        <th class="text-center">Tgl Kembali (Rencana)</th>
-                        <th class="text-center">Status</th>
                         <th class="text-center">Hari Terlambat</th>
-                        <th class="text-right">Denda per Hari</th>
                         <th class="text-right">Total Denda</th>
-                        <th class="text-center">Tanggal Denda</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Tgl Bayar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,115 +164,47 @@
                     @foreach($dendaBelumBayar as $denda)
                     <tr class="table-danger">
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $denda->peminjaman->kode_peminjaman }}</td>
                         <td>
                             {{ $denda->peminjaman->anggota->nama_lengkap }}<br>
                             <small>{{ $denda->peminjaman->anggota->kelas }}</small>
                         </td>
                         <td>{{ $denda->peminjaman->buku->judul }}</td>
                         <td class="text-center">{{ $denda->peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                        <td class="text-center">{{ $denda->peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                        <td class="text-center">Denda Belum Dibayar</td>
                         <td class="text-center">{{ $denda->hari_terlambat }} hari</td>
-                        <td class="text-right">Rp {{ number_format($denda->denda_per_hari) }}</td>
                         <td class="text-right fw-bold">Rp {{ number_format($denda->total_denda) }}</td>
-                        <td class="text-center">{{ $denda->created_at->format('d/m/Y') }}</td>
+                        <td class="text-center">Belum Dibayar</td>
+                        <td class="text-center">-</td>
                     </tr>
                     @endforeach
                     
-                    {{-- Data Denda Sudah Dibayar --}}
-                    @foreach($dendaSudahBayar as $denda)
-                    <tr class="table-success">
-                        <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $denda->peminjaman->kode_peminjaman }}</td>
-                        <td>
-                            {{ $denda->peminjaman->anggota->nama_lengkap }}<br>
-                            <small>{{ $denda->peminjaman->anggota->kelas }}</small>
-                        </td>
-                        <td>{{ $denda->peminjaman->buku->judul }}</td>
-                        <td class="text-center">{{ $denda->peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                        <td class="text-center">{{ $denda->peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                        <td class="text-center">Denda Sudah Dibayar</td>
-                        <td class="text-center">{{ $denda->hari_terlambat }} hari</td>
-                        <td class="text-right">Rp {{ number_format($denda->denda_per_hari) }}</td>
-                        <td class="text-right fw-bold">Rp {{ number_format($denda->total_denda) }}</td>
-                        <td class="text-center">{{ $denda->created_at->format('d/m/Y') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-    @elseif($jenisLaporan == 'keterlambatan' && $peminjamanTerlambat->count() > 0)
-    <div class="card">
-        <div class="card-header">Data Keterlambatan</div>
-        <div class="card-body">
-            <table>
-                <thead class="table-warning">
-                    <tr>
-                        <th class="text-center">No</th>
-                        <th>Kode Peminjaman</th>
-                        <th>Anggota</th>
-                        <th>Buku</th>
-                        <th class="text-center">Tgl Pinjam</th>
-                        <th class="text-center">Tgl Kembali (Rencana)</th>
-                        <th class="text-center">Hari Terlambat</th>
-                        <th class="text-right">Denda per Hari</th>
-                        <th class="text-right">Total Denda</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $no = 1; @endphp
-                    
-                    {{-- Data Peminjaman Terlambat --}}
+                    {{-- Data Peminjaman Terlambat Aktif --}}
                     @foreach($peminjamanTerlambat as $peminjaman)
-                    @php
-                        $hariTerlambat = Carbon\Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
-                        $dendaAkanDikenakan = max(0, $hariTerlambat) * 1000; // Rp 1.000 per hari, minimal 0
-                    @endphp
+                                         @php
+                         // Perbaikan perhitungan hari terlambat
+                         $tanggalSekarang = Carbon\Carbon::now()->startOfDay();
+                         $tanggalKembali = $peminjaman->tanggal_kembali_rencana->startOfDay();
+                         $hariTerlambat = max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
+                         $dendaAkanDikenakan = $hariTerlambat * 1000;
+                     @endphp
                     <tr class="table-warning">
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $peminjaman->kode_peminjaman }}</td>
                         <td>
                             {{ $peminjaman->anggota->nama_lengkap }}<br>
                             <small>{{ $peminjaman->anggota->kelas }}</small>
                         </td>
                         <td>{{ $peminjaman->buku->judul }}</td>
                         <td class="text-center">{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                        <td class="text-center">{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
                         <td class="text-center">{{ $hariTerlambat }} hari</td>
-                        <td class="text-right">Rp 1,000</td>
                         <td class="text-right fw-bold">Rp {{ number_format($dendaAkanDikenakan) }}</td>
+                        <td class="text-center">Terlambat Aktif</td>
+                        <td class="text-center">-</td>
                     </tr>
-                                            @endforeach
-                        
-                        {{-- Data Keterlambatan Aktif --}}
-                        @foreach($peminjamanTerlambat as $peminjaman)
-                        @php
-                            $hariTerlambat = Carbon\Carbon::now()->startOfDay()->diffInDays($peminjaman->tanggal_kembali_rencana->startOfDay(), false);
-                            $dendaAkanDikenakan = max(0, $hariTerlambat) * 1000;
-                        @endphp
-                        <tr class="table-warning">
-                            <td class="text-center">{{ $no++ }}</td>
-                            <td>{{ $peminjaman->kode_peminjaman }}</td>
-                            <td>
-                                {{ $peminjaman->anggota->nama_lengkap }}<br>
-                                <small>{{ $peminjaman->anggota->kelas }}</small>
-                            </td>
-                            <td>{{ $peminjaman->buku->judul }}</td>
-                            <td class="text-center">{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                            <td class="text-center">{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                            <td class="text-center">Terlambat</td>
-                            <td class="text-center">{{ $hariTerlambat }} hari</td>
-                            <td class="text-right">Rp 1,000</td>
-                            <td class="text-right fw-bold">Rp {{ number_format($dendaAkanDikenakan) }}</td>
-                            <td class="text-center">-</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+    </div>
+
     @elseif($jenisLaporan == 'tahunan' && ($dendaSudahBayar->count() > 0 || $dendaBelumBayar->count() > 0))
     <div class="card">
         <div class="card-header">Data Denda Tahun Ajaran {{ $tahunAjaran }}/{{ $tahunAjaran ? (int)$tahunAjaran + 1 : '' }}</div>
@@ -274,17 +213,13 @@
                 <thead>
                     <tr>
                         <th class="text-center">No</th>
-                        <th>Kode Peminjaman</th>
                         <th>Anggota</th>
                         <th>Buku</th>
                         <th class="text-center">Tgl Pinjam</th>
-                        <th class="text-center">Tgl Kembali (Rencana)</th>
-                        <th class="text-center">Status</th>
                         <th class="text-center">Hari Terlambat</th>
-                        <th class="text-right">Denda per Hari</th>
                         <th class="text-right">Total Denda</th>
-                        <th class="text-center">Tanggal Denda</th>
-                        <th class="text-center">Tanggal Bayar</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Tgl Bayar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -294,19 +229,15 @@
                     @foreach($dendaSudahBayar as $denda)
                     <tr class="table-success">
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $denda->peminjaman->kode_peminjaman }}</td>
                         <td>
                             {{ $denda->peminjaman->anggota->nama_lengkap }}<br>
                             <small>{{ $denda->peminjaman->anggota->kelas }}</small>
                         </td>
                         <td>{{ $denda->peminjaman->buku->judul }}</td>
                         <td class="text-center">{{ $denda->peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                        <td class="text-center">{{ $denda->peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                        <td class="text-center">Sudah Dibayar</td>
                         <td class="text-center">{{ $denda->hari_terlambat }} hari</td>
-                        <td class="text-right">Rp {{ number_format($denda->denda_per_hari) }}</td>
                         <td class="text-right fw-bold">Rp {{ number_format($denda->total_denda) }}</td>
-                        <td class="text-center">{{ $denda->created_at->format('d/m/Y') }}</td>
+                        <td class="text-center">Sudah Dibayar</td>
                         <td class="text-center">{{ $denda->tanggal_bayar ? $denda->tanggal_bayar->format('d/m/Y') : '-' }}</td>
                     </tr>
                     @endforeach
@@ -315,19 +246,15 @@
                     @foreach($dendaBelumBayar as $denda)
                     <tr class="table-danger">
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>{{ $denda->peminjaman->kode_peminjaman }}</td>
                         <td>
                             {{ $denda->peminjaman->anggota->nama_lengkap }}<br>
                             <small>{{ $denda->peminjaman->anggota->kelas }}</small>
                         </td>
                         <td>{{ $denda->peminjaman->buku->judul }}</td>
                         <td class="text-center">{{ $denda->peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
-                        <td class="text-center">{{ $denda->peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
-                        <td class="text-center">Belum Dibayar</td>
                         <td class="text-center">{{ $denda->hari_terlambat }} hari</td>
-                        <td class="text-right">Rp {{ number_format($denda->denda_per_hari) }}</td>
                         <td class="text-right fw-bold">Rp {{ number_format($denda->total_denda) }}</td>
-                        <td class="text-center">{{ $denda->created_at->format('d/m/Y') }}</td>
+                        <td class="text-center">Belum Dibayar</td>
                         <td class="text-center">-</td>
                     </tr>
                     @endforeach
@@ -387,6 +314,8 @@
         </p>
     </div>
     @endif
+
+
 
 </body>
 </html> 

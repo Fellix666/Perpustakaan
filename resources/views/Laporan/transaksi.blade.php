@@ -6,13 +6,13 @@
 @section('breadcrumb')
 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 <li class="breadcrumb-item"><a href="{{ route('laporan.index') }}">Laporan</a></li>
-<li class="breadcrumb-item active">Transaksi</li>
+<li class="breadcrumb-item active">Peminjaman</li>
 @endsection
 
 @section('content')
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Laporan Transaksi</h5>
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Laporan Peminjaman</h5>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('laporan.transaksi') }}">
@@ -53,7 +53,7 @@
             <div class="table-responsive">
                 {{-- Tampilkan laporan peminjaman seperti di gambar --}}
                 <div class="p-3">
-                    <h4 class="text-center mb-3">DATA PEMINJAM BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
+                    <h4 class="text-center mb-3">DATA PEMINJAMAN BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
                     <h5 class="text-center mb-4">TAHUN PELAJARAN {{ $tahunAjaran }}/{{ $tahunAjaran + 1 }}</h5>
                     
                     @if(!empty($summaryData))

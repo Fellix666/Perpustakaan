@@ -16,6 +16,9 @@
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal"><i class="fas fa-file-import me-2"></i>Import Excel</button>
     <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadCoverModal"><i class="fas fa-file-archive me-2"></i>Upload Cover ZIP</button>
     @endif
+    @if(auth('admin')->user()->role === 'admin')
+    <a href="{{ route('buku.print-labels-view') }}" class="btn btn-secondary"><i class="fas fa-tags me-2"></i>Cetak Label Masal</a>
+    @endif
 </div>
 @endsection
 
@@ -90,17 +93,14 @@
             <table class="table table-hover mb-0">
                 <thead class="table-primary">
                     <tr>
-                        <th>No</th>
-                        <th>Kode Buku</th>
-                        <th>Judul</th>
-                        <th>Pengarang</th>
-                        <th>Penerbit</th>
-                        <th>Tahun</th>
-                        <th>Kategori</th>
-                        <th>Rak</th>
-                        <th>Stok Tersedia</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+                        <th width="5%">No</th>
+                        <th width="10%">Kode Buku</th>
+                        <th width="20%">Judul</th>
+                        <th width="15%">Pengarang</th>
+                        <th width="10%">Kategori</th>
+                        <th width="10%">Rak</th>
+                        <th width="10%">Stok</th>
+                        <th width="15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,31 +110,25 @@
                         <td><code>{{ $buku->kode_buku }}</code></td>
                         <td>{{ $buku->judul }}</td>
                         <td>{{ $buku->pengarang }}</td>
-                        <td>{{ $buku->penerbit }}</td>
-                        <td>{{ $buku->tahun_terbit }}</td>
                         <td>{{ $buku->kategori->nama_kategori ?? '-' }}</td>
                         <td>{{ $buku->rak->nama_rak ?? '-' }}</td>
                         <td>{{ $buku->stok_tersedia }}</td>
                         <td>
-                            @if($buku->status == 'tersedia')
-                                <span class="badge bg-success">Tersedia</span>
-                            @else
-                                <span class="badge bg-danger">Tidak Tersedia</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('buku.show', $buku) }}" class="btn btn-info" data-bs-toggle="tooltip" title="Detail">
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('buku.show', $buku->id) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @if(auth('admin')->user()->role === 'admin')
-                                <a href="{{ route('buku.edit', $buku) }}" class="btn btn-warning" data-bs-toggle="tooltip" title="Edit">
+                                <a href="{{ route('buku.edit', $buku->id) }}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('buku.destroy', $buku) }}" method="POST" style="display: inline;">
+                                <a href="{{ route('buku.label', $buku->id) }}" class="btn btn-sm btn-secondary" target="_blank">
+                                    <i class="fas fa-tag"></i>
+                                </a>
+                                <form action="{{ route('buku.destroy', $buku->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus" onclick="return confirmDelete(event)">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus buku ini?')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -170,117 +164,61 @@
     </div>
 </div>
 
-<!-- Modal Import Excel Buku -->
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+<!-- Modal Import Excel -->
+<div class="modal fade" id="importModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Data Buku</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
             <form action="{{ route('buku.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title" id="importModalLabel">Import Data Buku dari Excel</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
                 <div class="modal-body">
-                    <div class="alert alert-info">
-                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Petunjuk Import Excel</h6>
-                        <ol class="mb-0">
-                            <li>Download template Excel terlebih dahulu</li>
-                            <li>Isi data sesuai format yang ada di template</li>
-                            <li>Pastikan kode buku unik dan tidak duplikat</li>
-                            <li>Upload file Excel yang sudah diisi</li>
-                        </ol>
-                    </div>
-                    
                     <div class="mb-3">
-                        <label for="file" class="form-label">Pilih File Excel (.xlsx)</label>
-                        <input type="file" class="form-control" name="file" id="file" accept=".xlsx" required>
-                        <div class="form-text">Hanya file Excel (.xlsx) yang diperbolehkan</div>
+                        <label for="file" class="form-label">File Excel</label>
+                        <input type="file" class="form-control" name="file" accept=".xlsx,.xls" required>
+                        <div class="form-text">Format: .xlsx atau .xls</div>
                     </div>
-                    
-                    <div class="alert alert-warning">
-                        <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Perhatian!</h6>
-                        <ul class="mb-0">
-                            <li>Data yang sudah ada dengan kode buku yang sama akan diupdate</li>
-                            <li>Pastikan format data sesuai dengan template</li>
-                            <li>Proses import mungkin memakan waktu beberapa saat</li>
-                        </ul>
+                    <div class="mb-3">
+                        <a href="{{ asset('template/template_import_buku.xlsx') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download"></i> Download Template
+                        </a>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-file-import me-2"></i>Import Data
-                    </button>
+                    <button type="submit" class="btn btn-primary">Import</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- MODAL BARU: Upload Cover ZIP -->
-<div class="modal fade" id="uploadCoverModal" tabindex="-1" aria-labelledby="uploadCoverModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="{{ route('buku.proses-upload-cover') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="modal-header"><h5 class="modal-title" id="uploadCoverModalLabel">Upload Cover Buku Massal</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body">
-            <div class="alert alert-info"><p class="fw-bold">Petunjuk:</p><ol class="mb-0"><li>Ubah nama setiap cover agar sama persis dengan <strong>Kode Buku</strong> (Contoh: <strong>BKU001.jpg</strong>).</li><li>Masukkan semua cover ke dalam satu file <strong>.zip</strong>.</li></ol></div>
-            <div class="mb-3"><label for="zip_file" class="form-label">Pilih File ZIP</label><input type="file" class="form-control" name="zip_file" id="zip_file" accept=".zip" required></div>
+<!-- Modal Upload Cover ZIP -->
+<div class="modal fade" id="uploadCoverModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Cover Buku (ZIP)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('buku.proses-upload-cover') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="cover_zip" class="form-label">File ZIP Cover</label>
+                        <input type="file" class="form-control" name="cover_zip" accept=".zip" required>
+                        <div class="form-text">Upload file ZIP yang berisi foto cover buku. Nama file harus sesuai dengan kode buku.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button type="submit" class="btn btn-primary"><i class="fas fa-upload me-2"></i>Upload & Proses</button></div>
-      </form>
     </div>
-  </div>
 </div>
-@endsection
 
-@section('scripts')
-<script>
-function confirmDelete(event) {
-    event.preventDefault();
-    if (confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
-        event.target.closest('form').submit();
-    }
-    return false;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    
-    // File input validation for Excel
-    const fileInput = document.getElementById('file');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            var file = this.files[0];
-            if (file) {
-                var fileName = file.name.toLowerCase();
-                if (!fileName.endsWith('.xlsx')) {
-                    alert('Hanya file Excel (.xlsx) yang diperbolehkan!');
-                    this.value = '';
-                }
-            }
-        });
-    }
-    
-    // File input validation for ZIP
-    const zipInput = document.getElementById('zip_file');
-    if (zipInput) {
-        zipInput.addEventListener('change', function() {
-            var file = this.files[0];
-            if (file) {
-                var fileName = file.name.toLowerCase();
-                if (!fileName.endsWith('.zip')) {
-                    alert('Hanya file ZIP yang diperbolehkan!');
-                    this.value = '';
-                }
-            }
-        });
-    }
-});
-</script>
 @endsection 

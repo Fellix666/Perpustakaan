@@ -18,7 +18,7 @@
             </div>
             <div class="list-group list-group-flush">
                 <a href="{{ route('laporan.transaksi') }}" class="list-group-item list-group-item-action">
-                    <i class="fas fa-exchange-alt me-2 text-success"></i> Laporan Transaksi
+                    <i class="fas fa-exchange-alt me-2 text-success"></i> Laporan Peminjaman
                 </a>
                 <a href="{{ route('pengunjung.laporan') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-user-clock me-2 text-info"></i> Laporan Pengunjung
@@ -68,8 +68,8 @@
                     <div class="col-md-6 mb-3">
                         <div class="card bg-light">
                             <div class="card-body">
-                                <h6 class="card-title text-muted">Total Denda Diterima</h6>
-                                <h3 class="fw-bold text-success">Rp {{ number_format($totalDenda) }}</h3>
+                                <h6 class="card-title text-muted">Total Denda Belum Dibayar</h6>
+                                <h3 class="fw-bold text-danger">Rp {{ number_format($dendaBelumBayar) }}</h3>
                             </div>
                         </div>
                     </div>

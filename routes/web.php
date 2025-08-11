@@ -53,13 +53,16 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('buku', [BukuController::class, 'index'])->name('buku.index');
     Route::get('buku/create', [BukuController::class, 'create'])->name('buku.create');
     Route::post('buku', [BukuController::class, 'store'])->name('buku.store');
+    Route::get('buku/export/csv', [BukuController::class, 'export'])->name('buku.export');
+    Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
+    Route::post('buku/upload-cover-zip', [BukuController::class, 'prosesUploadCoverZip'])->name('buku.proses-upload-cover');
+    Route::get('buku/print-labels-view', [BukuController::class, 'printLabelsView'])->name('buku.print-labels-view');
+    Route::get('buku/print-labels', [BukuController::class, 'printLabels'])->name('buku.print-labels');
     Route::get('buku/{buku}', [BukuController::class, 'show'])->name('buku.show');
     Route::get('buku/{buku}/edit', [BukuController::class, 'edit'])->name('buku.edit');
     Route::put('buku/{buku}', [BukuController::class, 'update'])->name('buku.update');
     Route::delete('buku/{buku}', [BukuController::class, 'destroy'])->name('buku.destroy');
-    Route::get('buku/export/csv', [BukuController::class, 'export'])->name('buku.export');
-    Route::post('buku/import', [BukuController::class, 'import'])->name('buku.import');
-    Route::post('buku/upload-cover-zip', [BukuController::class, 'prosesUploadCoverZip'])->name('buku.proses-upload-cover');
+    Route::get('buku/{buku}/label', [BukuController::class, 'label'])->name('buku.label');
 
     // --- Manajemen Kategori ---
     Route::get('kategori', [KategoriController::class, 'index'])->name('kategori.index');

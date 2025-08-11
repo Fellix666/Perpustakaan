@@ -68,7 +68,7 @@
 
         /* Warna Biru (Default) */
         .card-header.blue {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #9fb0f1 0%, #4fa6fc 100%);
         }
 
         /* Warna Merah */
@@ -292,7 +292,7 @@
             }
             
             .card-header.blue {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                background: linear-gradient(135deg, #9fb0f1 0%, #4fa6fc 100%) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }

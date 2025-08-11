@@ -6,6 +6,7 @@ use App\Models\Buku;
 use App\Models\Kategori;
 use App\Models\Rak;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage; // <-- Pastikan ini ada
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -15,27 +16,50 @@ class BukuController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Buku::with(['kategori', 'rak'])->orderBy('judul');
+        $query = Buku::with(['kategori', 'rak']);
+        
+        // Filter berdasarkan kategori
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+        
+        // Filter berdasarkan rak
+        if ($request->filled('rak_id')) {
+            $query->where('rak_id', $request->rak_id);
+        }
+        
+        // Filter berdasarkan tahun terbit
+        if ($request->filled('tahun_terbit')) {
+            $query->where('tahun_terbit', $request->tahun_terbit);
+        }
+        
+        // Filter berdasarkan status stok
+        if ($request->filled('status')) {
+            if ($request->status === 'tersedia') {
+                $query->where('stok_tersedia', '>', 0);
+            } elseif ($request->status === 'habis') {
+                $query->where('stok_tersedia', '<=', 0);
+            }
+        }
+        
+        // Search
         if ($request->filled('q')) {
-            $q = $request->q;
-            $query->where(function($sub) use ($q) {
-                $sub->where('judul', 'like', "%$q%")
-                    ->orWhere('kode_buku', 'like', "%$q%")
-                    ->orWhere('pengarang', 'like', "%$q%")
-                    ->orWhere('penerbit', 'like', "%$q%");
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('pengarang', 'like', "%{$search}%")
+                  ->orWhere('kode_buku', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('kategori_id')) { $query->where('kategori_id', $request->kategori_id); }
-        if ($request->filled('rak_id')) { $query->where('rak_id', $request->rak_id); }
-        if ($request->filled('status')) { $query->where('status', $request->status); }
-        if ($request->filled('tahun_terbit')) { $query->where('tahun_terbit', $request->tahun_terbit); }
         
-        $bukus = $query->paginate(10)->withQueryString();
+        $bukus = $query->orderBy('kode_buku')->paginate(15);
+        
+        // Data untuk filter dropdown
         $kategoris = Kategori::orderBy('nama_kategori')->get();
         $raks = Rak::orderBy('nama_rak')->get();
-        $tahunTerbitList = Buku::select('tahun_terbit')->distinct()->orderBy('tahun_terbit', 'desc')->pluck('tahun_terbit');
+        $tahunTerbitList = Buku::distinct()->pluck('tahun_terbit')->sort()->values();
         
-        return view('buku.index', compact('bukus', 'kategoris', 'raks', 'tahunTerbitList'));
+        return view('Buku.index', compact('bukus', 'kategoris', 'raks', 'tahunTerbitList'));
     }
 
     public function create()
@@ -163,6 +187,106 @@ class BukuController extends Controller
         }
         $buku->delete();
         return redirect()->route('buku.index')->with('success', 'Buku berhasil dihapus');
+    }
+
+    public function label(Buku $buku)
+    {
+        return view('Buku.label', compact('buku'));
+    }
+
+    public function printLabels(Request $request)
+    {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
+        try {
+            // Ambil parameter filter
+            $filterKategori = $request->get('filter_kategori');
+            $filterRak = $request->get('filter_rak');
+            $filterTahun = $request->get('filter_tahun');
+            $filterStok = $request->get('filter_stok');
+            
+            // Query buku berdasarkan filter
+            $query = Buku::with(['kategori', 'rak']);
+            
+            if ($filterKategori) {
+                $query->where('kategori_id', $filterKategori);
+            }
+            
+            if ($filterRak) {
+                $query->where('rak_id', $filterRak);
+            }
+            
+            if ($filterTahun) {
+                $query->where('tahun_terbit', $filterTahun);
+            }
+            
+            if ($filterStok) {
+                if ($filterStok === 'tersedia') {
+                    $query->where('stok_tersedia', '>', 0);
+                } elseif ($filterStok === 'habis') {
+                    $query->where('stok_tersedia', '<=', 0);
+                }
+            }
+            
+            $books = $query->orderBy('kode_buku')->get();
+
+            return view('Buku.print-labels', compact('books'));
+        } catch (\Exception $e) {
+            Log::error('Error in printLabels: ' . $e->getMessage());
+            abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function printLabelsView(Request $request)
+    {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
+        try {
+            // Ambil parameter filter
+            $filterKategori = $request->get('filter_kategori');
+            $filterRak = $request->get('filter_rak');
+            $filterTahun = $request->get('filter_tahun');
+            $filterStok = $request->get('filter_stok');
+            
+            // Query buku berdasarkan filter
+            $query = Buku::with(['kategori', 'rak']);
+            
+            if ($filterKategori) {
+                $query->where('kategori_id', $filterKategori);
+            }
+            
+            if ($filterRak) {
+                $query->where('rak_id', $filterRak);
+            }
+            
+            if ($filterTahun) {
+                $query->where('tahun_terbit', $filterTahun);
+            }
+            
+            if ($filterStok) {
+                if ($filterStok === 'tersedia') {
+                    $query->where('stok_tersedia', '>', 0);
+                } elseif ($filterStok === 'habis') {
+                    $query->where('stok_tersedia', '<=', 0);
+                }
+            }
+            
+            $books = $query->orderBy('kode_buku')->get();
+
+            // Get filter data
+            $kategoris = Kategori::orderBy('nama_kategori')->get();
+            $raks = Rak::orderBy('nama_rak')->get();
+            $tahunTerbitList = Buku::distinct()->pluck('tahun_terbit')->sort()->values();
+
+            return view('Buku.print-labels-view', compact('books', 'kategoris', 'raks', 'tahunTerbitList'));
+        } catch (\Exception $e) {
+            Log::error('Error in printLabelsView: ' . $e->getMessage());
+            abort(500, 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function export()

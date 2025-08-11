@@ -2,8 +2,17 @@
 <div class="sidebar d-none d-lg-block">
     <div class="d-flex flex-column">
         <div class="p-3 text-center border-bottom">
-            <h4 class="mb-0"><i class="fas fa-book-open me-2"></i>Logo SMP</h4>
-            <small>Nama SMP</small>
+            <div class="mb-2">
+                @if(file_exists(public_path('images/logo-smp.png')) && filesize(public_path('images/logo-smp.png')) > 1000)
+                    <img src="{{ asset('images/logo-smp.png') }}" alt="Logo SMP Negeri 1 Sanggau Ledo" class="img-fluid" style="max-height: 120px; max-width: 120px;">
+                @else
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fas fa-school fa-2x text-white"></i>
+                    </div>
+                @endif
+            </div>
+            <h6 class="mb-0 text-primary fw-bold">Perpustakaan</h6>
+            <small class="text-muted">SMP Negeri 1 Sanggau Ledo</small>
         </div>
         <nav class="nav flex-column py-3">
             <a class="nav-link @if(request()->routeIs('dashboard')) active @endif" href="{{ route('dashboard') }}">
@@ -55,7 +64,19 @@
 <!-- Mobile Sidebar -->
 <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebar">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title"><i class="fas fa-book-open me-2"></i>Perpustakaan</h5>
+        <div class="d-flex align-items-center">
+            @if(file_exists(public_path('images/logo-smp.png')) && filesize(public_path('images/logo-smp.png')) > 1000)
+                <img src="{{ asset('images/logo-smp.png') }}" alt="Logo SMP Negeri 1 Sanggau Ledo" class="me-2" style="max-height: 50px; max-width: 50px;">
+            @else
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                    <i class="fas fa-school text-white"></i>
+                </div>
+            @endif
+            <div>
+                <h6 class="offcanvas-title mb-0 text-primary fw-bold">Perpustakaan</h6>
+                <small class="text-muted">SMP Negeri 1 Sanggau Ledo</small>
+            </div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">

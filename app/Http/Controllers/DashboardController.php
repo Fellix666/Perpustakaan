@@ -30,13 +30,30 @@ class DashboardController extends Controller
                       ->where('tanggal_kembali_rencana', '<', Carbon::today());
             })->count();
             
-        $totalDenda = Denda::where('status_bayar', 'belum-dibayar')->sum('total_denda');
+        // Hitung denda yang sudah ada record di tabel dendas
+        $dendaBelumBayar = Denda::where('status_bayar', 'belum-dibayar')->sum('total_denda');
+        
+        // Hitung denda keterlambatan aktif (yang belum ada record di tabel dendas)
+        $dendaKeterlambatanAktif = Peminjaman::where('status', 'dipinjam')
+            ->whereNull('tanggal_kembali_aktual')
+            ->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
+            ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30))
+            ->get()
+            ->sum(function($peminjaman) {
+                $tanggalSekarang = Carbon::now()->startOfDay();
+                $tanggalKembali = $peminjaman->tanggal_kembali_rencana->startOfDay();
+                $hariTerlambat = max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
+                return $hariTerlambat * 1000; // Denda per hari Rp 1,000
+            });
+        
+        // Total denda = denda belum dibayar + denda keterlambatan aktif
+        $totalDenda = $dendaBelumBayar + $dendaKeterlambatanAktif;
         
         // Data pengunjung hari ini
         $pengunjungHariIni = Pengunjung::whereDate('tanggal', Carbon::today())->count();
         $pengunjungPinjam = Pengunjung::where('tujuan_kunjungan', 'pinjam')->count();
         
-        // Ambil 5 peminjaman terbaru yang unik
+        // Ambil 3 peminjaman terbaru yang unik
         $peminjamanTerbaru = Peminjaman::with(['anggota', 'buku'])
             ->orderBy('id', 'desc')
             ->limit(10) // Ambil lebih banyak untuk memastikan tidak ada duplikasi
@@ -44,12 +61,12 @@ class DashboardController extends Controller
             ->unique(function ($item) {
                 return $item->anggota_id . '-' . $item->buku_id . '-' . $item->tanggal_pinjam;
             })
-            ->take(5);
+            ->take(3);
             
         $bukuTerpopuler = Buku::select('bukus.*')
             ->selectRaw('(SELECT COUNT(*) FROM peminjamans WHERE peminjamans.buku_id = bukus.id) as total_peminjaman')
             ->orderBy('total_peminjaman', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->get();
 
         // Data untuk grafik trend peminjaman 7 hari terakhir
@@ -63,11 +80,12 @@ class DashboardController extends Controller
             ];
         }
 
-        // Data untuk grafik status peminjaman
+        // Data untuk grafik status peminjaman (menggunakan status realtime)
+        $peminjamans = Peminjaman::all();
         $statusPeminjaman = [
-            'Dipinjam' => Peminjaman::where('status', 'dipinjam')->count(),
-            'Dikembalikan' => Peminjaman::where('status', 'dikembalikan')->count(),
-            'Terlambat' => Peminjaman::where('status', 'terlambat')->count()
+            'Dipinjam' => $peminjamans->where('status_realtime', 'dipinjam')->count(),
+            'Dikembalikan' => $peminjamans->where('status_realtime', 'dikembalikan')->count(),
+            'Terlambat' => $peminjamans->where('status_realtime', 'terlambat')->count()
         ];
         
         // Data untuk grafik kategori buku terpopuler

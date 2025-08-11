@@ -35,6 +35,10 @@ class PengunjungController extends Controller
 
     public function create(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         // Jika ada anggota_id yang dikirim dari parameter (misal dari peminjaman)
         $selectedAnggotaId = $request->get('anggota_id');
         
@@ -43,6 +47,10 @@ class PengunjungController extends Controller
 
     public function store(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         $request->validate([
             'anggota_id' => 'required|exists:anggotas,id',
             'tujuan_kunjungan' => 'required|in:pinjam,baca',
@@ -75,11 +83,19 @@ class PengunjungController extends Controller
 
     public function edit(Pengunjung $pengunjung)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         return view('pengunjung.edit', compact('pengunjung'));
     }
 
     public function update(Request $request, Pengunjung $pengunjung)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         $request->validate([
             'tujuan_kunjungan' => 'required|in:pinjam,baca',
             'keterangan' => 'nullable|string|max:500',
@@ -96,6 +112,10 @@ class PengunjungController extends Controller
 
     public function destroy(Pengunjung $pengunjung)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         $pengunjung->delete();
         return redirect()->route('pengunjung.index')
                         ->with('success', 'Data kunjungan berhasil dihapus.');
@@ -187,16 +207,16 @@ class PengunjungController extends Controller
     }
 
     /**
-     * Mendapatkan tahun ajaran yang tersedia (5 tahun ajaran terakhir)
+     * Mendapatkan tahun ajaran yang tersedia (3 tahun ajaran terakhir)
      */
     private function getAvailableAcademicYears()
     {
         // Ambil tahun ajaran saat ini (tahun ini)
         $currentYear = date('Y');
         
-        // Buat 5 tahun ajaran terakhir
+        // Buat 3 tahun ajaran terakhir (tahun sekarang + 2 tahun sebelumnya)
         $academicYears = collect();
-        for ($i = 4; $i >= 0; $i--) {
+        for ($i = 2; $i >= 0; $i--) {
             $tahun = $currentYear - $i;
             $academicYears->push($tahun);
         }

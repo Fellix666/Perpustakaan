@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - Perpustakaan Digital')
+@section('title', 'Dashboard - Perpustakaan SMP Negeri 1 Sanggau Ledo')
 @section('page-title', 'Dashboard')
 
 @section('content')

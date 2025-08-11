@@ -24,9 +24,11 @@
         <i class="fas fa-file-archive me-2"></i>Upload Foto ZIP
     </button>
     @endif
+    @if(auth('admin')->user()->role === 'admin')
     <a href="{{ route('anggota.print-cards') }}" class="btn btn-warning">
         <i class="fas fa-id-card me-2"></i>Cetak Kartu
     </a>
+    @endif
 </div>
 
 <!-- Modal Import Excel -->

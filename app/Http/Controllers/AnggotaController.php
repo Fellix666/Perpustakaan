@@ -184,6 +184,10 @@ class AnggotaController extends Controller
 
     public function card(Anggota $anggota)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         // Default warna jika tidak ada parameter
         $color = request('color', 'blue');
         
@@ -195,6 +199,10 @@ class AnggotaController extends Controller
      */
     public function printCards(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         // Ambil data untuk filter
         $kelasFilterList = $this->getKelasFilterList();
         $tahunAjaranList = $this->getTahunAjaranList();
@@ -234,6 +242,10 @@ class AnggotaController extends Controller
      */
     public function printCardsView(Request $request)
     {
+        if (auth('admin')->user()->role === 'kepala_perpus') {
+            abort(403, 'Akses hanya untuk admin');
+        }
+        
         // Ambil parameter filter
         $selectedKelas = $request->get('kelas');
         $selectedTahun = $request->get('tahun_daftar');

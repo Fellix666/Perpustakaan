@@ -26,13 +26,13 @@ class PengembalianController extends Controller
         try {
             $peminjaman = Peminjaman::with('buku')->findOrFail($id);
 
-            // Validasi tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana
-            $tanggalRencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
+            // Validasi tanggal kembali aktual tidak boleh lebih awal dari tanggal pinjam
+            $tanggalPinjam = Carbon::parse($peminjaman->tanggal_pinjam)->startOfDay();
             $tanggalAktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
             
-            if ($tanggalAktual->lt($tanggalRencana)) {
+            if ($tanggalAktual->lt($tanggalPinjam)) {
                 return redirect()->back()
-                    ->withErrors(['tanggal_kembali_aktual' => 'Tanggal kembali aktual tidak boleh lebih awal dari tanggal kembali rencana (' . $peminjaman->tanggal_kembali_rencana->format('d/m/Y') . ')'])
+                    ->withErrors(['tanggal_kembali_aktual' => 'Tanggal kembali aktual tidak boleh lebih awal dari tanggal pinjam (' . $peminjaman->tanggal_pinjam->format('d/m/Y') . ')'])
                     ->withInput();
             }
 
@@ -52,23 +52,23 @@ class PengembalianController extends Controller
             $aktual = Carbon::parse($request->tanggal_kembali_aktual)->startOfDay();
 
             if ($aktual->isAfter($rencana)) {
-                // PERBAIKAN: Hitung hari kerja (Senin-Jumat) saja
-                $selisihHariKerja = $this->hitungHariKerja($rencana, $aktual);
+                // PERBAIKAN: Hitung hari kalender biasa (termasuk Sabtu-Minggu)
+                $selisihHariKalender = $rencana->diffInDays($aktual, false);
                 
-                if ($selisihHariKerja > 0) {
+                if ($selisihHariKalender > 0) {
                     $dendaPerHari = 1000;
-                    $totalDenda = $selisihHariKerja * $dendaPerHari;
+                    $totalDenda = $selisihHariKalender * $dendaPerHari;
 
                     // Buat record baru di tabel dendas
                     Denda::create([
                         'peminjaman_id' => $peminjaman->id,
-                        'hari_terlambat' => $selisihHariKerja,
+                        'hari_terlambat' => $selisihHariKalender,
                         'denda_per_hari' => $dendaPerHari,
                         'total_denda' => $totalDenda,
                         'status_bayar' => 'belum-dibayar',
                     ]);
 
-                    $pesanSukses = 'Pengembalian berhasil dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKerja . ' hari kerja)';
+                    $pesanSukses = 'Pengembalian berhasil dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKalender . ' hari)';
                 }
             }
             
@@ -93,24 +93,7 @@ class PengembalianController extends Controller
         }
     }
 
-    /**
-     * Menghitung hari kerja (Senin-Jumat) antara dua tanggal
-     */
-    private function hitungHariKerja($tanggalAwal, $tanggalAkhir)
-    {
-        $hariKerja = 0;
-        $tanggal = $tanggalAwal->copy();
-        
-        while ($tanggal->lte($tanggalAkhir)) {
-            // Cek apakah hari ini adalah hari kerja (1=Senin, 2=Selasa, ..., 5=Jumat)
-            if ($tanggal->dayOfWeek >= 1 && $tanggal->dayOfWeek <= 5) {
-                $hariKerja++;
-            }
-            $tanggal->addDay();
-        }
-        
-        return $hariKerja;
-    }
+
 
     /**
      * Menampilkan daftar data yang sudah dikembalikan.
@@ -219,27 +202,27 @@ class PengembalianController extends Controller
                     $peminjaman->dendaRecord->delete();
                 }
 
-                // Hitung denda baru dengan hari kerja
+                // Hitung denda baru dengan hari kalender biasa
                 $rencana = Carbon::parse($peminjaman->tanggal_kembali_rencana)->startOfDay();
                 $aktual = $tanggalBaru->startOfDay();
 
                 if ($aktual->isAfter($rencana)) {
-                    $selisihHariKerja = $this->hitungHariKerja($rencana, $aktual);
+                    $selisihHariKalender = $rencana->diffInDays($aktual, false);
                     
-                    if ($selisihHariKerja > 0) {
+                    if ($selisihHariKalender > 0) {
                         $dendaPerHari = 1000;
-                        $totalDenda = $selisihHariKerja * $dendaPerHari;
+                        $totalDenda = $selisihHariKalender * $dendaPerHari;
 
                         // Buat record denda baru
                         Denda::create([
                             'peminjaman_id' => $peminjaman->id,
-                            'hari_terlambat' => $selisihHariKerja,
+                            'hari_terlambat' => $selisihHariKalender,
                             'denda_per_hari' => $dendaPerHari,
                             'total_denda' => $totalDenda,
                             'status_bayar' => 'belum-dibayar',
                         ]);
 
-                        $pesanSukses = 'Data pengembalian berhasil diperbarui dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKerja . ' hari kerja)';
+                        $pesanSukses = 'Data pengembalian berhasil diperbarui dengan denda keterlambatan sebesar Rp ' . number_format($totalDenda) . ' (' . $selisihHariKalender . ' hari)';
                     }
                 }
             }

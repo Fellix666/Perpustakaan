@@ -12,9 +12,11 @@
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-users me-2"></i>Data Pengunjung Perpustakaan</h5>
+        @if(auth('admin')->user()->role === 'admin')
         <a href="{{ route('pengunjung.create') }}" class="btn btn-light btn-sm">
             <i class="fas fa-plus me-2"></i>Tambah Kunjungan
         </a>
+        @endif
     </div>
     <div class="card-body">
         <!-- Filter -->
@@ -46,96 +48,75 @@
         </form>
 
         <!-- Tabel Data -->
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>No</th>
-                        <th>Tanggal</th>
-                        <th>Anggota</th>
-                        <th>Tujuan</th>
-                        <th>Keterangan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($pengunjungs as $index => $pengunjung)
-                    <tr>
-                        <td>{{ $index + 1 + ($pengunjungs->currentPage() - 1) * $pengunjungs->perPage() }}</td>
-                        <td>{{ $pengunjung->tanggal->format('d/m/Y') }}</td>
-                        <td>
-                            <strong>{{ $pengunjung->anggota->nama_lengkap }}</strong><br>
-                            <small class="text-muted">{{ $pengunjung->anggota->nomor_anggota }} - {{ $pengunjung->anggota->kelas }}</small>
-                        </td>
-                        <td>
-                            <span class="badge bg-info">{{ $pengunjung->tujuan_kunjungan_text }}</span>
-                        </td>
-                        <td>{{ $pengunjung->keterangan ?? '-' }}</td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('pengunjung.show', $pengunjung) }}" class="btn btn-info" title="Detail">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                
-                                <form action="{{ route('pengunjung.destroy', $pengunjung) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus data ini?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <h5>Tidak ada data pengunjung</h5>
-                                <p>Belum ada data kunjungan yang dicatat.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-center">
-            {{ $pengunjungs->links() }}
-        </div>
+        @if($pengunjungs->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Anggota</th>
+                            <th>Tujuan</th>
+                            <th>Keterangan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pengunjungs as $index => $pengunjung)
+                        <tr>
+                            <td>{{ $pengunjungs->firstItem() + $index }}</td>
+                            <td>{{ $pengunjung->tanggal->format('d/m/Y') }}</td>
+                            <td>
+                                <strong>{{ $pengunjung->anggota->nama_lengkap }}</strong><br>
+                                <small class="text-muted">{{ $pengunjung->anggota->nomor_anggota }} - {{ $pengunjung->anggota->kelas }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ $pengunjung->tujuan_kunjungan_text }}</span>
+                            </td>
+                            <td>{{ $pengunjung->keterangan ?? '-' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ route('pengunjung.show', $pengunjung) }}" class="btn btn-info" title="Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    @if(auth('admin')->user()->role === 'admin')
+                                    <form action="{{ route('pengunjung.destroy', $pengunjung) }}" method="POST" style="display:inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger" title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted small">
+                        Menampilkan {{ $pengunjungs->firstItem() ?? 0 }} - {{ $pengunjungs->lastItem() ?? 0 }} dari {{ $pengunjungs->total() }} data
+                    </div>
+                    <div>
+                        {{ $pengunjungs->links('vendor.pagination.simple-bootstrap-5') }}
+                    </div>
+                </div>
+            </div>
+        @else
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Tidak ada data pengunjung</h5>
+                <p class="text-muted">Belum ada data kunjungan yang dicatat.</p>
+                <a href="{{ route('pengunjung.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Tambah Kunjungan Pertama
+                </a>
+            </div>
+        @endif
     </div>
-</div>
-
-<!-- Statistik Cepat -->
-<div class="row">
-         <div class="col-md-4">
-         <div class="card bg-primary text-white">
-             <div class="card-body">
-                 <h6 class="card-title">Total Kunjungan Hari Ini</h6>
-                 <h3 class="fw-bold">{{ $pengunjungs->where('tanggal', now()->toDateString())->count() }}</h3>
-             </div>
-         </div>
-     </div>
-     
-     <div class="col-md-4">
-         <div class="card bg-info text-white">
-             <div class="card-body">
-                 <h6 class="card-title">Total Semua</h6>
-                 <h3 class="fw-bold">{{ $pengunjungs->total() }}</h3>
-             </div>
-         </div>
-     </div>
-     
-     <div class="col-md-4">
-         <div class="card bg-success text-white">
-             <div class="card-body">
-                 <h6 class="card-title">Pinjam Buku</h6>
-                 <h3 class="fw-bold">{{ $pengunjungs->where('tujuan_kunjungan', 'pinjam')->count() }}</h3>
-             </div>
-         </div>
-     </div>
 </div>
 @endsection 

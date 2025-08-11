@@ -4,8 +4,17 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand mx-auto d-flex align-items-center" href="{{ route('dashboard') }}">
-            <i class="fas fa-book-open me-2"></i>
-            <span class="fw-bold">Perpustakaan</span>
+            @if(file_exists(public_path('images/logo-smp.png')) && filesize(public_path('images/logo-smp.png')) > 1000)
+                <img src="{{ asset('images/logo-smp.png') }}" alt="Logo SMP Negeri 1 Sanggau Ledo" class="me-2" style="max-height: 45px; max-width: 45px;">
+            @else
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                    <i class="fas fa-school text-white"></i>
+                </div>
+            @endif
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-primary">Perpustakaan</span>
+                <small class="text-muted">SMP Negeri 1 Sanggau Ledo</small>
+            </div>
         </a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">

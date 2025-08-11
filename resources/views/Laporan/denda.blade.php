@@ -24,10 +24,9 @@
                         <option value="tahunan" {{ $jenisLaporan == 'tahunan' ? 'selected' : '' }}>Laporan Tahunan</option>
                     </select>
                 </div>
-                <div class="col-md-3" id="tahun_ajaran_container">
+                <div class="col-md-3">
                     <label for="tahun_ajaran" class="form-label">Tahun Ajaran</label>
                     <select name="tahun_ajaran" id="tahun_ajaran" class="form-select">
-                        <option value="">Semua Tahun Ajaran</option>
                         @foreach($availableYears ?? [] as $year)
                             <option value="{{ $year }}" {{ ($tahunAjaran ?? '') == $year ? 'selected' : '' }}>
                                 {{ $year }}/{{ (int)$year + 1 }}
@@ -35,14 +34,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3" id="date_range_container">
-                    <label for="start_date" class="form-label">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate }}">
-                </div>
-                <div class="col-md-3" id="end_date_container">
-                    <label for="end_date" class="form-label">Sampai Tanggal</label>
-                    <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate }}">
-                </div>
+
                 <div class="col-md-12 mt-3">
                     <button type="submit" class="btn btn-warning w-100">
                         <i class="fas fa-search me-2"></i>Tampilkan
@@ -52,6 +44,8 @@
         </form>
     </div>
 </div>
+
+
 
 <!-- Ringkasan -->
 @if($jenisLaporan == 'pengumuman')
@@ -97,42 +91,9 @@
     </div>
 </div>
 
-<!-- Summary Per Bulan untuk Laporan Tahunan -->
-@if(isset($summaryData) && $summaryData->count() > 0)
-<div class="card shadow-sm mb-4">
-    <div class="card-header">
-        <h6 class="mb-0">Summary Per Bulan</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Bulan</th>
-                        <th>Sudah Dibayar</th>
-                        <th>Belum Dibayar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($summaryData as $bulanKey => $bulanData)
-                    <tr>
-                        <td>{{ $bulanData['bulan'] }}</td>
-                        <td>
-                            <span class="badge bg-success">{{ $bulanData['sudah_dibayar']['transaksi'] }} transaksi</span>
-                            <br><small>Rp {{ number_format($bulanData['sudah_dibayar']['nominal']) }}</small>
-                        </td>
-                        <td>
-                            <span class="badge bg-danger">{{ $bulanData['belum_dibayar']['transaksi'] }} transaksi</span>
-                            <br><small>Rp {{ number_format($bulanData['belum_dibayar']['nominal']) }}</small>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-@endif
+
+
+
 @endif
 
 <!-- Data Tabel -->
@@ -145,7 +106,10 @@
                 <i class="fas fa-chart-bar text-primary me-2"></i>Data Laporan Tahunan Denda
             @endif
         </h6>
-        <a href="{{ route('laporan.print.denda', request()->all()) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('laporan.print.denda', [
+            'jenis_laporan' => $jenisLaporan,
+            'tahun_ajaran' => request('tahun_ajaran', $tahunAjaran)
+        ]) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
             @if($jenisLaporan == 'pengumuman')
                 <i class="fas fa-print me-2"></i>Cetak Pengumuman
             @else
@@ -204,8 +168,11 @@
                                 <td>{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') ?? '-' }}</td>
                                 <td><span class="badge bg-warning">Terlambat Aktif</span></td>
                                 @php
-                                    $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
-                                    $dendaTerlambat = max(0, $hariTerlambat) * 1000;
+                                    // Perbaikan perhitungan hari terlambat
+                                    $tanggalSekarang = \Carbon\Carbon::now()->startOfDay();
+                                    $tanggalKembali = $peminjaman->tanggal_kembali_rencana->startOfDay();
+                                    $hariTerlambat = max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
+                                    $dendaTerlambat = $hariTerlambat * 1000;
                                 @endphp
                                 <td><span class="badge bg-danger">{{ $hariTerlambat }} hari</span></td>
                                 <td>Rp 1,000</td>

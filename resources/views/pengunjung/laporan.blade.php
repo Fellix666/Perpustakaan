@@ -5,8 +5,8 @@
 
 @section('breadcrumb')
 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-<li class="breadcrumb-item"><a href="{{ route('pengunjung.index') }}">Data Pengunjung</a></li>
-<li class="breadcrumb-item active">Laporan</li>
+<li class="breadcrumb-item"><a href="{{ route('laporan.index') }}">Laporan</a></li>
+<li class="breadcrumb-item active">Data Pengunjung</li>
 @endsection
 
 @section('content')

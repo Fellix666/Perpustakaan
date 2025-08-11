@@ -159,9 +159,9 @@ class LaporanController extends Controller
         // Ambil tahun ajaran saat ini (tahun ini)
         $currentYear = date('Y');
         
-        // Buat 5 tahun ajaran terakhir
+        // Buat 3 tahun ajaran terakhir (tahun sekarang + 2 tahun sebelumnya)
         $academicYears = collect();
-        for ($i = 4; $i >= 0; $i--) {
+        for ($i = 2; $i >= 0; $i--) {
             $tahun = $currentYear - $i;
             $academicYears->push($tahun);
         }
@@ -194,8 +194,8 @@ class LaporanController extends Controller
         // Hitung total denda
         $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
         $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-            $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
-            return max(0, $hariTerlambat) * 1000; // Denda per hari Rp 1.000, minimal 0
+            $hariTerlambat = $this->hitungHariTerlambat($peminjaman->tanggal_kembali_rencana);
+            return $hariTerlambat * 1000; // Denda per hari Rp 1.000, minimal 0
         });
         
         return [
@@ -206,23 +206,16 @@ class LaporanController extends Controller
         ];
     }
 
+
+
     /**
-     * Menghitung hari kerja (Senin-Jumat) antara dua tanggal
+     * Menghitung hari terlambat (hari kalender biasa)
      */
-    private function hitungHariKerja($tanggalAwal, $tanggalAkhir)
+    private function hitungHariTerlambat($tanggalKembaliRencana)
     {
-        $hariKerja = 0;
-        $tanggal = Carbon::parse($tanggalAwal)->copy();
-        
-        while ($tanggal->lte($tanggalAkhir)) {
-            // Cek apakah hari ini adalah hari kerja (1=Senin, 2=Selasa, ..., 5=Jumat)
-            if ($tanggal->dayOfWeek >= 1 && $tanggal->dayOfWeek <= 5) {
-                $hariKerja++;
-            }
-            $tanggal->addDay();
-        }
-        
-        return $hariKerja;
+        $tanggalSekarang = Carbon::now()->startOfDay();
+        $tanggalKembali = $tanggalKembaliRencana->startOfDay();
+        return max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
     }
 
     /**
@@ -230,116 +223,69 @@ class LaporanController extends Controller
      */
     public function laporanDenda(Request $request)
     {
-        $jenisLaporan = $request->get('jenis_laporan', 'pengumuman'); // pengumuman, tahunan
+        $jenisLaporan = $request->get('jenis_laporan', 'pengumuman');
         $availableYears = $this->getAvailableAcademicYears();
         
+        // Set tahun ajaran default
+        $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+        $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+        
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
+        }
+        
+        // Tentukan periode tahun ajaran (Juli - Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
+        
         if ($jenisLaporan == 'pengumuman') {
-            // Laporan pengumuman (bulanan)
-            $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-            $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-            
-            // Filter tahun ajaran untuk pengumuman
-            $tahunAjaran = $request->get('tahun_ajaran');
-            if ($tahunAjaran) {
-                // Pastikan tahun ajaran adalah integer
-                if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
-                    $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
-                } else {
-                    $tahunAjaran = (int) $tahunAjaran;
-                }
-            }
-            
-            // Data denda belum dibayar dengan filter tahun ajaran
+            // Laporan pengumuman - data yang perlu ditindaklanjuti
             $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'belum-dibayar')
-                ->whereBetween('created_at', [$startDate, $endDate]);
-            
-            // Filter berdasarkan tahun ajaran anggota jika dipilih
-            if ($tahunAjaran) {
-                $dendaBelumBayar->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                });
-            }
-            
-            $dendaBelumBayar = $dendaBelumBayar->orderBy('created_at', 'desc')->get();
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
                 
-            $dendaSudahBayar = collect(); // Kosong untuk pengumuman
-            
-            // Data peminjaman terlambat (sedang berlangsung) dengan filter tahun ajaran
             $peminjamanTerlambat = Peminjaman::with(['anggota', 'buku'])
                 ->where('status', 'dipinjam')
                 ->whereNull('tanggal_kembali_aktual')
-                ->where(function($query) {
-                    $query->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
-                          ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30));
-                });
-            
-            // Filter berdasarkan tahun ajaran anggota jika dipilih
-            if ($tahunAjaran) {
-                $peminjamanTerlambat->whereHas('anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                });
-            }
-            
-            $peminjamanTerlambat = $peminjamanTerlambat->orderBy('tanggal_kembali_rencana', 'asc')->get();
-            
-            // Hitung total denda
-            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
-            $totalDendaSudahBayar = 0;
-            $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-                $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
-                return max(0, $hariTerlambat) * 1000;
-            });
-            
-            $summaryData = collect();
+                ->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
+                ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                ->orderBy('tanggal_kembali_rencana', 'asc')
+                ->get();
+                
+            $dendaSudahBayar = collect();
             
         } else {
-            // Laporan tahunan
-            $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
-            $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
-            
-            // Pastikan tahun ajaran adalah integer
-            if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
-                $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
-            } else {
-                $tahunAjaran = (int) $tahunAjaran;
-            }
-            
-            // Tentukan periode tahun ajaran (Juli - Juni)
-            $startDate = $tahunAjaran . '-07-01';
-            $endDate = ($tahunAjaran + 1) . '-06-30';
-            
-            // Data denda yang sudah dibayar pertahun dengan filter tahun ajaran
+            // Laporan tahunan - data lengkap
             $dendaSudahBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'dibayar')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                })
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            // Data denda yang belum dibayar pertahun dengan filter tahun ajaran
             $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'belum-dibayar')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                })
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            // Data peminjaman terlambat (kosong untuk laporan tahunan)
             $peminjamanTerlambat = collect();
-            
-            // Hitung total
-            $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
-            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
-            $totalDendaTerlambat = 0;
-            
-            // Summary per bulan
-            $summaryData = $this->getDendaSummary($startDate, $endDate, $tahunAjaran);
         }
+        
+        // Hitung total
+        $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
+        $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+        $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
+            $hariTerlambat = $this->hitungHariTerlambat($peminjaman->tanggal_kembali_rencana);
+            return $hariTerlambat * 1000;
+        });
+        
+        // Summary per bulan
+        $summaryData = $this->getDendaSummary($startDate, $endDate, $tahunAjaran);
         
         return view('laporan.denda', compact(
             'dendaBelumBayar', 
@@ -363,113 +309,68 @@ class LaporanController extends Controller
     public function printDenda(Request $request)
     {
         $jenisLaporan = $request->get('jenis_laporan', 'pengumuman');
+        $availableYears = $this->getAvailableAcademicYears();
+        
+        // Set tahun ajaran default
+        $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
+        $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
+        
+        // Pastikan tahun ajaran adalah integer
+        if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
+            $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
+        } else {
+            $tahunAjaran = (int) $tahunAjaran;
+        }
+        
+        // Tentukan periode tahun ajaran (Juli - Juni)
+        $startDate = $tahunAjaran . '-07-01';
+        $endDate = ($tahunAjaran + 1) . '-06-30';
         
         if ($jenisLaporan == 'pengumuman') {
-            // Print pengumuman (bulanan)
-            $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
-            $endDate = $request->get('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
-            
-            // Filter tahun ajaran untuk pengumuman
-            $tahunAjaran = $request->get('tahun_ajaran');
-            if ($tahunAjaran) {
-                // Pastikan tahun ajaran adalah integer
-                if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
-                    $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
-                } else {
-                    $tahunAjaran = (int) $tahunAjaran;
-                }
-            }
-            
-            // Data denda belum dibayar dengan filter tahun ajaran
+            // Print laporan pengumuman - data yang perlu ditindaklanjuti
             $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'belum-dibayar')
-                ->whereBetween('created_at', [$startDate, $endDate]);
-            
-            // Filter berdasarkan tahun ajaran anggota jika dipilih
-            if ($tahunAjaran) {
-                $dendaBelumBayar->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                });
-            }
-            
-            $dendaBelumBayar = $dendaBelumBayar->orderBy('created_at', 'desc')->get();
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->orderBy('created_at', 'desc')
+                ->get();
                 
-            $dendaSudahBayar = collect(); // Kosong untuk pengumuman
-            
-            // Data peminjaman terlambat dengan filter tahun ajaran
             $peminjamanTerlambat = Peminjaman::with(['anggota', 'buku'])
                 ->where('status', 'dipinjam')
                 ->whereNull('tanggal_kembali_aktual')
-                ->where(function($query) {
-                    $query->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
-                          ->where('tanggal_pinjam', '>=', Carbon::now()->subDays(30));
-                });
-            
-            // Filter berdasarkan tahun ajaran anggota jika dipilih
-            if ($tahunAjaran) {
-                $peminjamanTerlambat->whereHas('anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                });
-            }
-            
-            $peminjamanTerlambat = $peminjamanTerlambat->orderBy('tanggal_kembali_rencana', 'asc')->get();
-            
-            // Hitung total denda
-            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
-            $totalDendaSudahBayar = 0;
-            $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
-                $hariTerlambat = $this->hitungHariKerja($peminjaman->tanggal_kembali_rencana, Carbon::now());
-                return max(0, $hariTerlambat) * 1000;
-            });
-            
-            $summaryData = collect();
+                ->where('tanggal_kembali_rencana', '<', Carbon::now()->subDay())
+                ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                ->orderBy('tanggal_kembali_rencana', 'asc')
+                ->get();
+                
+            $dendaSudahBayar = collect();
             
         } else {
-            // Print laporan tahunan
-            $tahunAjaran = $request->get('tahun_ajaran', Carbon::now()->format('Y'));
-            
-            // Pastikan tahun ajaran adalah integer
-            if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
-                $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
-            } else {
-                $tahunAjaran = (int) $tahunAjaran;
-            }
-            
-            // Tentukan periode tahun ajaran (Juli - Juni)
-            $startDate = $tahunAjaran . '-07-01';
-            $endDate = ($tahunAjaran + 1) . '-06-30';
-            
-            // Data denda yang sudah dibayar pertahun dengan filter tahun ajaran
+            // Print laporan tahunan - data lengkap
             $dendaSudahBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'dibayar')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                })
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            // Data denda yang belum dibayar pertahun dengan filter tahun ajaran
             $dendaBelumBayar = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
                 ->where('status_bayar', 'belum-dibayar')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                    $query->where('tahun_ajaran_masuk', $tahunAjaran);
-                })
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            // Data peminjaman terlambat (kosong untuk laporan tahunan)
             $peminjamanTerlambat = collect();
-            
-            // Hitung total
-            $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
-            $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
-            $totalDendaTerlambat = 0;
-            
-            // Summary per bulan
-            $summaryData = $this->getDendaSummary($startDate, $endDate, $tahunAjaran);
         }
+        
+        // Hitung total
+        $totalDendaSudahBayar = $dendaSudahBayar->sum('total_denda');
+        $totalDendaBelumBayar = $dendaBelumBayar->sum('total_denda');
+        $totalDendaTerlambat = $peminjamanTerlambat->sum(function($peminjaman) {
+            $hariTerlambat = $this->hitungHariTerlambat($peminjaman->tanggal_kembali_rencana);
+            return $hariTerlambat * 1000;
+        });
+        
+        // Summary per bulan
+        $summaryData = $this->getDendaSummary($startDate, $endDate, $tahunAjaran);
         
         return view('laporan.print.denda', compact(
             'dendaBelumBayar', 
@@ -505,12 +406,7 @@ class LaporanController extends Controller
             )
             ->whereBetween('created_at', [$startDate, $endDate]);
         
-        // Filter berdasarkan tahun ajaran anggota jika dipilih
-        if ($tahunAjaran) {
-            $dendaData->whereHas('peminjaman.anggota', function($query) use ($tahunAjaran) {
-                $query->where('tahun_ajaran_masuk', $tahunAjaran);
-            });
-        }
+        // TIDAK menggunakan filter tahun ajaran anggota untuk summary
         
         $dendaData = $dendaData->groupBy('bulan', 'tahun', 'status_bayar')
             ->orderBy('tahun')
@@ -685,8 +581,15 @@ class LaporanController extends Controller
         $tingkatList = ['VII', 'VIII', 'IX'];
         
         foreach ($tingkatList as $tingkat) {
+            // Gunakan query yang lebih spesifik untuk menghindari masalah LIKE
             $totalTingkat = Peminjaman::join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
-                ->where('anggotas.kelas', 'like', $tingkat . '%')
+                ->where(function($query) use ($tingkat) {
+                    $query->where('anggotas.kelas', 'like', $tingkat . ' A')
+                          ->orWhere('anggotas.kelas', 'like', $tingkat . ' B')
+                          ->orWhere('anggotas.kelas', 'like', $tingkat . ' C')
+                          ->orWhere('anggotas.kelas', 'like', $tingkat . ' D')
+                          ->orWhere('anggotas.kelas', 'like', $tingkat . ' E');
+                })
                 ->whereBetween('peminjamans.tanggal_pinjam', [$startDate, $endDate])
                 ->count();
             
@@ -729,6 +632,95 @@ class LaporanController extends Controller
             'kategoriFavorit' => $kategoriFavorit,
             'anggotaTerbanyak' => $anggotaTerbanyak
         ];
+    }
+
+    /**
+     * Mendapatkan statistik tambahan untuk laporan tahunan denda
+     */
+    private function getStatistikDendaTahunan($startDate, $endDate)
+    {
+        $dendaSudahBayar = Denda::where('status_bayar', 'dibayar')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+        
+        $dendaBelumBayar = Denda::where('status_bayar', 'belum-dibayar')
+            ->whereBetween('created_at', [$startDate, $endDate]);
+        
+        $totalSudahBayar = $dendaSudahBayar->sum('total_denda');
+        $totalBelumBayar = $dendaBelumBayar->sum('total_denda');
+        $countSudahBayar = $dendaSudahBayar->count();
+        $countBelumBayar = $dendaBelumBayar->count();
+        
+        $totalTransaksi = $countSudahBayar + $countBelumBayar;
+        $persentasePembayaran = $totalTransaksi > 0 ? 
+            round(($countSudahBayar / $totalTransaksi) * 100, 2) : 0;
+        
+        $rataRataDenda = $countSudahBayar > 0 ? 
+            round($totalSudahBayar / $countSudahBayar, 0) : 0;
+        
+        return [
+            'total_denda_dibayar' => $totalSudahBayar,
+            'total_denda_belum_dibayar' => $totalBelumBayar,
+            'total_transaksi_dibayar' => $countSudahBayar,
+            'total_transaksi_belum_dibayar' => $countBelumBayar,
+            'persentase_pembayaran' => $persentasePembayaran,
+            'rata_rata_denda_per_transaksi' => $rataRataDenda,
+            'bulan_tertinggi_denda' => $this->getBulanTertinggiDenda($startDate, $endDate),
+            'kelas_tertinggi_denda' => $this->getKelasTertinggiDenda($startDate, $endDate)
+        ];
+    }
+    
+    /**
+     * Mendapatkan bulan dengan denda tertinggi
+     */
+    private function getBulanTertinggiDenda($startDate, $endDate)
+    {
+        $bulanTertinggi = Denda::select(
+                DB::raw('MONTH(created_at) as bulan'),
+                DB::raw('YEAR(created_at) as tahun'),
+                DB::raw('SUM(total_denda) as total_denda')
+            )
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy('bulan', 'tahun')
+            ->orderBy('total_denda', 'desc')
+            ->first();
+        
+        if ($bulanTertinggi) {
+            $namaBulan = Carbon::createFromDate($bulanTertinggi->tahun, $bulanTertinggi->bulan, 1)->format('F Y');
+            return [
+                'bulan' => $namaBulan,
+                'total_denda' => $bulanTertinggi->total_denda
+            ];
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Mendapatkan kelas dengan denda tertinggi
+     */
+    private function getKelasTertinggiDenda($startDate, $endDate)
+    {
+        $kelasTertinggi = Denda::join('peminjamans', 'dendas.peminjaman_id', '=', 'peminjamans.id')
+            ->join('anggotas', 'peminjamans.anggota_id', '=', 'anggotas.id')
+            ->select(
+                'anggotas.kelas',
+                DB::raw('SUM(dendas.total_denda) as total_denda'),
+                DB::raw('COUNT(*) as total_transaksi')
+            )
+            ->whereBetween('dendas.created_at', [$startDate, $endDate])
+            ->groupBy('anggotas.kelas')
+            ->orderBy('total_denda', 'desc')
+            ->first();
+        
+        if ($kelasTertinggi) {
+            return [
+                'kelas' => $kelasTertinggi->kelas,
+                'total_denda' => $kelasTertinggi->total_denda,
+                'total_transaksi' => $kelasTertinggi->total_transaksi
+            ];
+        }
+        
+        return null;
     }
 
 
@@ -821,10 +813,10 @@ class LaporanController extends Controller
         $endDate = ($tahunAjaran + 1) . '-06-30';
         
         // Hanya laporan peminjaman
-                $data = Peminjaman::with(['anggota', 'buku'])
-                          ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-                          ->orderBy('tanggal_pinjam', 'desc')
-                          ->get();
+        $data = Peminjaman::with(['anggota', 'buku'])
+                  ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                  ->orderBy('tanggal_pinjam', 'desc')
+                  ->get();
         $summaryData = $this->getPeminjamanSummary($startDate, $endDate);
         
         return view('laporan.print.transaksi', compact(

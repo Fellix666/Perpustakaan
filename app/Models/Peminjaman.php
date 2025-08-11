@@ -72,13 +72,9 @@ class Peminjaman extends Model
             $tglKembali = $this->tanggal_kembali_rencana->startOfDay();
             
             // Tampilkan terlambat jika sudah lewat batas waktu DAN belum dikembalikan
-            // Tapi hanya jika sudah lewat lebih dari 1 hari untuk memberikan toleransi
+            // TIDAK ADA TOLERANSI - langsung terlambat jika lewat tanggal
             if ($now->gt($tglKembali) && !$this->tanggal_kembali_aktual) {
-                // Berikan toleransi 1 hari sebelum dianggap terlambat
-                $toleransi = $tglKembali->copy()->addDay();
-                if ($now->gt($toleransi)) {
-                    return 'terlambat';
-                }
+                return 'terlambat';
             }
         }
 

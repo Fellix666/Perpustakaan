@@ -37,7 +37,7 @@
 
         /* Warna Biru (Default) */
         .card-header.blue {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #9fb0f1 0%, #4fa6fc 100%);
         }
 
         /* Warna Merah */
@@ -252,7 +252,7 @@
             }
             
             .card-header.blue {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                background: linear-gradient(135deg, #9fb0f1 0%, #4fa6fc 100%) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -371,7 +371,7 @@
         <div class="card-header {{ $color ?? 'blue' }}">
             <div class="school-info">
                 <div class="card-title">KARTU PERPUSTAKAAN</div>
-                <div class="school-name">SMPN 1 SANGGAU LEDO</div>
+                <div class="school-name">SMP NEGERI 1 SANGGAU LEDO</div>
             </div>
         </div>
         
