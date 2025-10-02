@@ -168,23 +168,7 @@ Catatan: Jika perubahan tidak muncul, coba `php artisan config:clear` dan `php a
 
 ---
 
-## 7. Struktur Folder
-
-```
-Perpustakaan/
-  app/
-  resources/
-    views/
-    js, css
-  public/
-  routes/
-  database/
-  storage/
-```
-
----
-
-## 8. Lisensi
+## 7. Lisensi
 
 ![License](https://img.shields.io/badge/License-Private-red.svg)  
 
@@ -196,6 +180,7 @@ Project ini adalah perangkat lunak yang bersifat **private**.
 Hanya boleh digunakan untuk kepentingan internal **SMP Negeri 1 Sanggau Ledo** dan penelitian akademik terkait.  
 
 Dilarang keras untuk:  
+
 - Menyalin  
 - Mendistribusikan  
 - Memodifikasi  
