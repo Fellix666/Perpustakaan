@@ -141,8 +141,6 @@ Catatan: Jika perubahan tidak muncul, coba `php artisan config:clear` dan `php a
 
 ## 6. Screenshots
 
-## 6. Screenshots
-
 ### Login
 
 ![Login](resources/screenshots/login.png)
@@ -210,4 +208,3 @@ tanpa izin tertulis dari pemilik/pengembang.
 ## Authors
 
 - **Fellix666** – [GitHub Profile](https://github.com/Fellix666)
-
