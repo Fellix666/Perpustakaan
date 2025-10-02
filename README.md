@@ -1,8 +1,8 @@
-## 1. Judul & Deskripsi Singkat
+## 1. Judul & Deskripsi
 
-Nama Aplikasi: Perpustakaan SMP Negeri 1 Sanggau Ledo
+Aplikasi Pengolahan Data Perpustakaan Berbasis Web di SMP Negeri 1 Sanggau Ledo
 
-Deskripsi: Aplikasi web untuk mengelola data anggota, buku, transaksi peminjaman/pengembalian, denda, pengunjung, serta laporan dan analisis peminjaman.
+Aplikasi web yang digunakan untuk mengelola data anggota, buku, transaksi peminjaman/pengembalian, denda, pengunjung, serta laporan dan analisis peminjaman.
 
 ---
 
@@ -36,39 +36,141 @@ Aplikasi ini membantu pustakawan dalam:
 
 ---
 
-## 4. Instalasi & Konfigurasi (Ringkas)
+## 4. Instalasi & Konfigurasi
 
-1) Clone ke contoh: `C:\xampp\htdocs\TUGASAKHIR\Perpustakaan`
-2) Jalankan:
-   - `composer install`
-   - `npm install`
-3) Salin `.env` & key:
-   - `copy .env.example .env`
-   - `php artisan key:generate`
-4) Atur database pada `.env` lalu buat database tersebut
-5) Migrasi & (opsional) seeder:
-   - `php artisan migrate`
-   - `php artisan db:seed`
-6) Jalankan aplikasi:
-   - `php artisan serve` (<http://127.0.0.1:8000>) atau via XAMPP ke folder `public/`
-7) Aset: `npm run dev` (dev) atau `npm run build` (produksi)
+1) Siapkan lingkungan
+   - XAMPP aktif (Apache & MySQL) atau gunakan built-in server Laravel.
+   - PHP 8.x, Composer, Node.js & npm sudah terpasang.
+
+2) Ambil kode sumber
+   - Letakkan proyek di `C:\xampp\htdocs\TUGASAKHIR\Perpustakaan` (contoh pada Windows).
+
+3) Pasang dependensi
+   - Jalankan `composer install`
+   - Jalankan `npm install`
+
+4) Konfigurasi `.env`
+   - Salin contoh: `copy .env.example .env`
+   - Generate key: `php artisan key:generate`
+   - Atur koneksi database (contoh):
+     - `DB_CONNECTION=mysql`
+     - `DB_HOST=127.0.0.1`
+     - `DB_PORT=3306`
+     - `DB_DATABASE=perpustakaan`
+     - `DB_USERNAME=root`
+     - `DB_PASSWORD=` (kosong jika default XAMPP)
+   - Buat database dengan nama yang sama di phpMyAdmin.
+
+5) Migrasi & (opsional) seeder
+   - Migrasi: `php artisan migrate`
+   - Seeder (jika tersedia): `php artisan db:seed`
+
+6) Menjalankan aplikasi
+   - Dev server: `php artisan serve` lalu akses <http://127.0.0.1:8000>
+   - Atau via XAMPP: arahkan virtual host/URL ke folder `public/`
+
+7) Aset front-end
+   - Mode pengembangan: `npm run dev`
+   - Build produksi: `npm run build`
+
+Catatan: Jika perubahan tidak muncul, coba `php artisan config:clear` dan `php artisan route:clear`.
 
 ---
 
-## 5. Screenshots (Opsional)
+## 5. Tata Cara Penggunaan Aplikasi
 
-- Login: `resources/screenshots/login.png`
-- Dashboard: `resources/screenshots/dashboard.png`
-- Data Anggota: `resources/screenshots/anggota.png`
-- Peminjaman: `resources/screenshots/peminjaman.png`
-- Pengembalian: `resources/screenshots/pengembalian.png`
-- Laporan: `resources/screenshots/laporan.png`
+1) Login
+   - Buka aplikasi lalu masukkan email dan kata sandi.
+   - Klik tombol "Masuk". Jika gagal, pastikan kredensial benar atau hubungi admin.
 
-Letakkan file gambar sesuai path di atas atau sesuaikan dengan lokasi Anda.
+2) Mengenal Dashboard
+   - Lihat kartu ringkasan: Total Anggota, Total Buku, Sedang Dipinjam, Total Denda.
+   - Grafik tren peminjaman dan diagram status membantu memantau aktivitas.
+   - Gunakan menu sisi kiri untuk menuju modul: Data Master, Transaksi, Laporan.
+
+3) Menambah Anggota Baru
+   - Navigasi: "Data Master" > "Data Anggota" > klik tombol "Tambah Anggota".
+   - Isi data wajib: No. anggota (jika otomatis, biarkan), nama lengkap, jenis kelamin, kelas, kontak.
+   - Simpan. Anggota akan tampil di tabel dengan status "Aktif".
+   - (Opsional) Import massal: klik "Import Excel" setelah mengunduh "Template Excel" dan mengisi datanya.
+   - (Opsional) Upload foto massal: gunakan "Upload Foto ZIP" dengan struktur nama file sesuai nomor anggota.
+
+4) Mencetak Kartu Anggota
+   - Pada halaman "Data Anggota", centang baris yang ingin dicetak.
+   - Klik tombol "Cetak Kartu" untuk menghasilkan dokumen cetak/PDF kartu anggota.
+
+5) Menambah Buku
+   - Navigasi: "Data Master" > "Data Buku" > klik "Tambah Buku".
+   - Isi judul, pengarang, penerbit, tahun, kategori, lokasi rak, dan stok eksemplar.
+   - Simpan. Pastikan kategori dan rak tersedia (kelola di menu "Kategori Buku" dan "Data Rak").
+
+6) Melakukan Peminjaman
+   - Navigasi: "Transaksi" > "Peminjaman" > klik "Tambah Peminjaman".
+   - Pilih anggota dan buku. Sistem akan memvalidasi stok dan batas pinjaman.
+   - Atur tanggal pinjam dan tanggal jatuh tempo. Klik "Simpan".
+   - Status peminjaman akan muncul pada tabel sebagai "Dipinjam".
+
+7) Memproses Pengembalian & Denda
+   - Navigasi: "Transaksi" > "Pengembalian".
+   - Cari transaksi via kolom pencarian (kode, nama anggota, atau judul buku).
+   - Buka detail, klik "Simpan Pengembalian". Jika lewat jatuh tempo, denda dihitung otomatis.
+   - Jika aplikasi mendukung pelunasan, catat pembayaran hingga status denda menjadi "Lunas".
+
+8) Mencatat Data Pengunjung
+   - Navigasi: "Transaksi" > "Data Pengunjung".
+   - Klik "Tambah" dan isi nama/kelas (atau identitas lain sesuai form), lalu simpan.
+
+9) Membuat Laporan
+   - Navigasi: "Laporan".
+   - Pilih jenis laporan: Peminjaman, Pengunjung, Denda & Keterlambatan, Analisis Peminjaman.
+   - Tentukan tahun ajaran/periode tanggal dan filter tambahan, klik "Tampilkan".
+   - Gunakan tombol "Cetak" untuk menyimpan sebagai PDF atau mencetak.
+
+10) Pencarian & Filter Cepat
+
+- Gunakan kolom "Cari..." di kanan atas tabel untuk mencari berdasarkan kode/nama/judul.
+- Gunakan panel filter (status, anggota, buku, tanggal) lalu klik "Filter" untuk menyaring data.
+
+11) Tips Operasional
+
+- Bila tombol aksi tidak terlihat, cek hak akses/role akun Anda.
+- Perbarui data stok saat ada penambahan/pengurangan fisik buku agar laporan akurat.
+- Lakukan backup database berkala melalui phpMyAdmin agar data aman.
 
 ---
 
-## 6. Struktur Folder (Opsional)
+## 6. Screenshots (Opsional)
+
+## 6. Screenshots
+
+### Login
+
+![Login](resources/screenshots/login.png)
+
+### Dashboard
+
+![Dashboard](resources/screenshots/Dashboard.png)
+
+### Data Anggota
+
+![Data Anggota](resources/screenshots/Anggota.png)
+
+### Peminjaman
+
+![Peminjaman](resources/screenshots/Peminjaman.png)
+
+### Pengembalian
+
+![Pengembalian](resources/screenshots/Pengembalian.png)
+
+### Laporan
+
+![Navigasi Laporan](resources/screenshots/NavigasiLaporan.png)
+![Laporan](resources/screenshots/Laporan.png)
+
+---
+
+## 7. Struktur Folder (Opsional)
 
 ```
 Perpustakaan/
@@ -84,6 +186,28 @@ Perpustakaan/
 
 ---
 
-## 7. Lisensi
+## 8. Lisensi
 
-Private (Internal). Hak cipta milik pengembang dan pihak sekolah terkait.
+![License](https://img.shields.io/badge/License-Private-red.svg)  
+
+**Private License**  
+
+Copyright (c) 2025 Fellix666  
+
+Project ini adalah perangkat lunak yang bersifat **private**.  
+Hanya boleh digunakan untuk kepentingan internal **SMP Negeri 1 Sanggau Ledo** dan penelitian akademik terkait.  
+
+Dilarang keras untuk:  
+- Menyalin  
+- Mendistribusikan  
+- Memodifikasi  
+- Menggunakan ulang project ini  
+
+tanpa izin tertulis dari pemilik/pengembang.  
+
+---
+
+## Authors
+
+- **Fellix666** – [GitHub Profile](https://github.com/Fellix666)
+
