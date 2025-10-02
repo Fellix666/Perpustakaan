@@ -7,41 +7,29 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-        // Nonaktifkan foreign key checks sementara
+
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        
-        // Hapus data lama
+
         DB::table('kategoris')->truncate();
         DB::table('raks')->truncate();
-        
-        // Reset auto increment
+
         DB::statement('ALTER TABLE kategoris AUTO_INCREMENT = 1');
         DB::statement('ALTER TABLE raks AUTO_INCREMENT = 1');
-        
-        // Re-seed data dengan ID yang benar
+
         $this->seedKategoris();
         $this->seedRaks();
-        
-        // Aktifkan kembali foreign key checks
+
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        // Tidak perlu rollback karena ini adalah perbaikan data
+
     }
 
-    /**
-     * Seed kategori dengan ID yang benar
-     */
     private function seedKategoris(): void
     {
         $kategoris = [
@@ -62,9 +50,6 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Seed rak dengan ID yang benar
-     */
     private function seedRaks(): void
     {
         $raks = [

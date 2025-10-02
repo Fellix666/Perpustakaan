@@ -180,7 +180,6 @@
                     {{-- Data Peminjaman Terlambat Aktif --}}
                     @foreach($peminjamanTerlambat as $peminjaman)
                                          @php
-                         // Perbaikan perhitungan hari terlambat
                          $tanggalSekarang = Carbon\Carbon::now()->startOfDay();
                          $tanggalKembali = $peminjaman->tanggal_kembali_rencana->startOfDay();
                          $hariTerlambat = max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
@@ -314,8 +313,5 @@
         </p>
     </div>
     @endif
-
-
-
 </body>
 </html> 

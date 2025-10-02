@@ -1,0 +1,264 @@
+/* Kartu Anggota Perpustakaan - Versi Compact */
+.card-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    overflow: hidden;
+    width: 340px; /* Ukuran standar kartu kredit */
+    height: 215px; /* Rasio 1.58:1 seperti kartu kredit */
+    position: relative;
+    page-break-inside: avoid;
+    margin: 10px;
+    border: 1px solid #ddd;
+}
+
+.card-header {
+    color: white;
+    padding: 8px 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-title {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 0 0 2px 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.school-name {
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.card-body {
+    padding: 8px 15px;
+    background: white;
+    position: relative;
+    height: calc(100% - 45px);
+    display: flex;
+    flex-direction: column;
+}
+
+.info-table td {
+    padding: 0.5px 0;
+    font-size: 8px;
+    vertical-align: top;
+    line-height: 1.1;
+}
+
+.info-table td:first-child {
+    font-weight: bold;
+    color: #666;
+    width: 65px;
+}
+
+.member-photo {
+    width: 40px;
+    height: 55px;
+    border-radius: 5px;
+    object-fit: cover;
+    border: 2px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.photo-placeholder {
+    width: 40px;
+    height: 55px;
+    border-radius: 5px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 16px;
+}
+
+.signature-name {
+    font-size: 8px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 1px;
+}
+
+.nip {
+    font-size: 6px;
+    color: #999;
+}
+
+.card-footer {
+    margin-top: auto;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 2px solid #dee2e6;
+    padding: 6px 15px;
+    border-radius: 0 0 10px 10px;
+}
+
+.validity-info {
+    font-size: 7px;
+    color: #495057;
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.card-note {
+    font-size: 5px;
+    color: #6c757d;
+    text-align: center;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Print Styles */
+@media print {
+    .card-container {
+        width: 85mm !important;
+        height: 55mm !important;
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        margin: 5px !important;
+        border-radius: 6px !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .card-header {
+        padding: 6px 15px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .card-title {
+        font-size: 11px !important;
+        margin: 0 0 1px 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    .school-name {
+        font-size: 9px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .card-body {
+        padding: 8px 15px 6px 15px !important;
+        min-height: 70px !important;
+        height: auto !important;
+    }
+    
+    .info-table td {
+        padding: 0.3px 0 !important;
+        font-size: 6px !important;
+        vertical-align: top !important;
+        line-height: 1.0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .info-table td:first-child {
+        width: 50px !important;
+        font-weight: bold !important;
+        color: #666 !important;
+    }
+    
+    .member-info {
+        display: block !important;
+    }
+    
+    .member-photo {
+        width: 35px !important;
+        height: 50px !important;
+        border-radius: 4px !important;
+        object-fit: cover !important;
+        border: 2px solid #e0e0e0 !important;
+        background: #f8f9fa !important;
+    }
+    
+    .photo-placeholder {
+        width: 35px !important;
+        height: 50px !important;
+        border-radius: 4px !important;
+        font-size: 14px !important;
+        background: #f8f9fa !important;
+        border: 2px solid #e0e0e0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #999 !important;
+    }
+    
+    .signature-name {
+        font-size: 6px !important;
+        margin-bottom: 0.3px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .nip {
+        font-size: 4px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .signature-section {
+        margin-top: 2px !important;
+        padding: 2px 15px !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .signature-info {
+        font-size: 6px !important;
+    }
+    
+    .photo-section {
+        margin-right: 12px !important;
+    }
+    
+    .card-footer {
+        padding: 4px 15px !important;
+        border-radius: 0 0 10px 10px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    .validity-info {
+        font-size: 6px !important;
+        margin-bottom: 2px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    .card-note {
+        font-size: 4px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+}
+

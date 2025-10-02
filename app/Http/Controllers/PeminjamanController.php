@@ -12,7 +12,6 @@ class PeminjamanController extends Controller
     public function index(Request $request)
     {
         $query = Peminjaman::with(['anggota', 'buku'])->orderBy('created_at', 'desc');
-        // ... (kode filter Anda sudah benar) ...
         $peminjamans = $query->paginate(10)->withQueryString();
         return view('peminjaman.index', compact('peminjamans'));
     }
@@ -22,8 +21,7 @@ class PeminjamanController extends Controller
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
-        
-        // Jika ada anggota_id dari parameter (dari pengunjung), set sebagai selected
+
         $selectedAnggotaId = $request->get('anggota_id');
         
         return view('peminjaman.create', compact('selectedAnggotaId'));
@@ -56,7 +54,6 @@ class PeminjamanController extends Controller
             'status' => 'dipinjam',
         ]);
 
-        // PERBAIKAN FINAL: Gunakan decrement untuk update stok yang andal
         $buku->decrement('stok_tersedia');
         if ($buku->fresh()->stok_tersedia <= 0) {
             $buku->status = 'tidak-tersedia';
@@ -84,7 +81,6 @@ class PeminjamanController extends Controller
         $buku = $peminjaman->buku;
         $peminjaman->delete();
 
-        // PERBAIKAN FINAL: Gunakan increment untuk update stok yang andal
         if ($buku) {
             $buku->increment('stok_tersedia');
             $buku->status = 'tersedia';
@@ -93,8 +89,7 @@ class PeminjamanController extends Controller
         
         return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil dihapus.');
     }
-    
-    // Method edit dan update Anda sudah benar
+
     public function edit(Peminjaman $peminjaman) 
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -132,7 +127,6 @@ class PeminjamanController extends Controller
         return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil diperbarui.');
     }
 
-    // Method untuk mencari anggota
     public function searchAnggota(Request $request)
     {
         $search = $request->get('search');
@@ -145,10 +139,8 @@ class PeminjamanController extends Controller
         $query = Anggota::where('status', 'aktif');
         
         if ($exactId) {
-            // Jika ada exact_id, cari berdasarkan ID
             $query->where('id', $exactId);
         } else {
-            // Jika tidak ada exact_id, cari berdasarkan search term
             $query->where(function($q) use ($search) {
                 $q->where('nomor_anggota', 'like', "%{$search}%")
                   ->orWhere('nama_lengkap', 'like', "%{$search}%")
@@ -157,13 +149,12 @@ class PeminjamanController extends Controller
         }
         
         $anggotas = $query->orderBy('nama_lengkap')
-                          ->limit(10)
-                          ->get(['id', 'nomor_anggota', 'nama_lengkap', 'kelas']);
+                        ->limit(10)
+                        ->get(['id', 'nomor_anggota', 'nama_lengkap', 'kelas']);
 
         return response()->json($anggotas);
     }
 
-    // Method untuk mencari buku
     public function searchBuku(Request $request)
     {
         $search = $request->get('search');
@@ -173,15 +164,15 @@ class PeminjamanController extends Controller
         }
         
         $bukus = Buku::where('status', 'tersedia')
-                     ->where('stok_tersedia', '>', 0)
-                     ->where(function($query) use ($search) {
-                         $query->where('judul', 'like', "%{$search}%")
-                               ->orWhere('kode_buku', 'like', "%{$search}%")
-                               ->orWhere('pengarang', 'like', "%{$search}%");
-                     })
-                     ->orderBy('judul')
-                     ->limit(10)
-                     ->get(['id', 'judul', 'kode_buku', 'pengarang', 'stok_tersedia']);
+                    ->where('stok_tersedia', '>', 0)
+                    ->where(function($query) use ($search) {
+                        $query->where('judul', 'like', "%{$search}%")
+                            ->orWhere('kode_buku', 'like', "%{$search}%")
+                            ->orWhere('pengarang', 'like', "%{$search}%");
+                    })
+                    ->orderBy('judul')
+                    ->limit(10)
+                    ->get(['id', 'judul', 'kode_buku', 'pengarang', 'stok_tersedia']);
 
         return response()->json($bukus);
     }

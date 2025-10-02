@@ -10,7 +10,6 @@
 
 @section('content')
 <div class="row">
-    {{-- Kolom Kiri - Navigasi Laporan --}}
     <div class="col-lg-4">
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
@@ -32,8 +31,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Kolom Kanan - Statistik --}}
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-header">

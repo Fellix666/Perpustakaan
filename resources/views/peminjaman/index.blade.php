@@ -82,9 +82,6 @@
                                     <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
                                     <td>{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') }}</td>
                                     <td>
-                                        {{-- ====================================================== --}}
-                                        {{-- <<<--- PERBAIKAN: Menggunakan status_realtime ---<<< --}}
-                                        {{-- ====================================================== --}}
                                         @php $status = $peminjaman->status_realtime; @endphp
                                         @if($status == 'dipinjam')
                                             <span class="badge bg-warning text-dark">Dipinjam</span>
@@ -98,7 +95,6 @@
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a href="{{ route('peminjaman.show', $peminjaman) }}" class="btn btn-info" title="Detail"><i class="fas fa-eye"></i></a>
                                             @if(auth('admin')->user()->role === 'admin')
-                                                {{-- Logika ini sudah benar, karena status 'terlambat' secara database masih 'dipinjam' --}}
                                                 @if($peminjaman->status != 'dikembalikan')
                                                     <a href="{{ route('peminjaman.edit', $peminjaman) }}" class="btn btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
                                                     <form action="{{ route('peminjaman.destroy', $peminjaman) }}" method="POST" style="display:inline;" onsubmit="return confirm('Anda yakin ingin menghapus data ini?')">

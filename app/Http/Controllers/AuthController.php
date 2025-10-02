@@ -10,17 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Show login form
-     */
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle login request
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -41,9 +35,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Handle logout request
-     */
     public function logout(Request $request)
     {
         Auth::guard('admin')->logout();
@@ -53,17 +44,11 @@ class AuthController extends Controller
         return redirect('/login');
     }
 
-    /**
-     * Show registration form (optional - only for testing)
-     */
     public function showRegisterForm()
     {
         return view('auth.register');
     }
 
-    /**
-     * Handle registration request (optional - only for testing)
-     */
     public function register(Request $request)
     {
         $request->validate([
@@ -83,17 +68,11 @@ class AuthController extends Controller
         return redirect('/dashboard');
     }
 
-    /**
-     * Tampilkan form profil admin
-     */
     public function profile()
     {
         return view('layouts.profile');
     }
 
-    /**
-     * Update data profil admin
-     */
     public function updateProfile(Request $request)
     {
         $admin = Auth::guard('admin')->user();

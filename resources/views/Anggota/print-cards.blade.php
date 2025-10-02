@@ -132,7 +132,7 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when filters change
+
     const filterInputs = document.querySelectorAll('#kelas, #tahun_daftar, #color');
     filterInputs.forEach(input => {
         input.addEventListener('change', function() {

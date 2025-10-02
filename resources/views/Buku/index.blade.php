@@ -107,7 +107,7 @@
                     @foreach($bukus as $index => $buku)
                     <tr>
                         <td>{{ $bukus->firstItem() + $index }}</td>
-                        <td><code>{{ $buku->kode_buku }}</code></td>
+                        <td>{{ $buku->kode_buku }}</td>
                         <td>{{ $buku->judul }}</td>
                         <td>{{ $buku->pengarang }}</td>
                         <td>{{ $buku->kategori->nama_kategori ?? '-' }}</td>

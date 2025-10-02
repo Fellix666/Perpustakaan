@@ -51,7 +51,6 @@
     <div class="card-body p-0">
         @if($data->count() > 0 || !empty($summaryData))
             <div class="table-responsive">
-                {{-- Tampilkan laporan peminjaman seperti di gambar --}}
                 <div class="p-3">
                     <h4 class="text-center mb-3">DATA PEMINJAMAN BUKU PERPUSTAKAAN SMP NEGERI 1 SANGGAU LEDO</h4>
                     <h5 class="text-center mb-4">TAHUN PELAJARAN {{ $tahunAjaran }}/{{ $tahunAjaran + 1 }}</h5>

@@ -78,7 +78,6 @@
   </div>
 </div>
 
-<!-- MODAL BARU: Upload Foto ZIP -->
 <div class="modal fade" id="uploadFotoModal" tabindex="-1" aria-labelledby="uploadFotoModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

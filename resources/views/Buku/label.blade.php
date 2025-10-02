@@ -18,8 +18,8 @@
         }
         
         .label-container {
-            width: 300px;
-            height: 120px;
+            width: 200px;
+            height: 80px;
             background-color: white;
             border: 2px solid #000;
             margin: 20px auto;
@@ -29,18 +29,18 @@
         .label-header {
             background: #000;
             color: white;
-            padding: 8px 12px;
+            padding: 4px 8px;
             text-align: center;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 9px;
             border-bottom: 1px solid #000;
         }
         
         .label-body {
-            padding: 8px 12px;
-            font-size: 10px;
-            line-height: 1.2;
-            height: calc(100% - 35px);
+            padding: 4px 8px;
+            font-size: 8px;
+            line-height: 1.1;
+            height: calc(100% - 25px);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -48,36 +48,36 @@
         
         .book-code {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 12px;
             color: #000;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             text-align: center;
             border-bottom: 1px solid #ccc;
-            padding-bottom: 2px;
+            padding-bottom: 1px;
         }
         
         .book-title {
             font-weight: bold;
             color: #000;
-            margin-bottom: 2px;
-            line-height: 1.1;
-            font-size: 11px;
+            margin-bottom: 1px;
+            line-height: 1.0;
+            font-size: 8px;
             text-align: center;
         }
         
         .book-author {
             color: #000;
-            margin-bottom: 2px;
-            font-size: 10px;
+            margin-bottom: 1px;
+            font-size: 7px;
             text-align: center;
         }
         
         .book-info {
             color: #000;
-            font-size: 9px;
+            font-size: 6px;
             text-align: center;
             border-top: 1px solid #ccc;
-            padding-top: 2px;
+            padding-top: 1px;
             margin-top: auto;
         }
         
@@ -101,7 +101,9 @@
         @media print {
             .label-container {
                 border: 2px solid #000;
-                margin: 10mm;
+                margin: 5mm;
+                width: 60mm;
+                height: 20mm;
                 page-break-inside: avoid;
             }
             
@@ -135,10 +137,7 @@
     </div>
     
     <script>
-        // Auto print when page loads
         window.onload = function() {
-            // Uncomment the line below to auto-print
-            // window.print();
         }
     </script>
 </body>

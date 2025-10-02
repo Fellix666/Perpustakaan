@@ -134,9 +134,6 @@
                                 </td>
                                 <td>{{ $peminjaman->tanggal_pinjam->format('d/m/Y') }}</td>
                                 <td>
-                                    {{-- ====================================================== --}}
-                                    {{-- <<<--- PERBAIKAN 1: Gunakan tanggal_kembali_aktual ---<<< --}}
-                                    {{-- ====================================================== --}}
                                     @if($peminjaman->tanggal_kembali_aktual)
                                         {{ $peminjaman->tanggal_kembali_aktual->format('d/m/Y') }}
                                     @else
@@ -154,9 +151,6 @@
                                     @endif
                                 </td>
                                 <td>
-                                    {{-- ====================================================== --}}
-                                    {{-- <<<--- PERBAIKAN 2: Gunakan relasi dendaRecord ---<<< --}}
-                                    {{-- ====================================================== --}}
                                     @if($peminjaman->dendaRecord)
                                         <span class="text-danger fw-bold">Rp {{ number_format($peminjaman->dendaRecord->total_denda, 0, ',', '.') }}</span>
                                         @if($peminjaman->dendaRecord->status_bayar == 'dibayar')
@@ -173,8 +167,6 @@
                         </tbody>
                     </table>
                 </div>
-                
-                {{-- Kartu rekapitulasi Anda --}}
                 
                 @else
                 <div class="text-center py-5">

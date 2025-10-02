@@ -7,12 +7,9 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
+
     public function run(): void
     {
-        // Call seeder untuk admin, kategori dan rak
         $this->call([
             AdminSeeder::class,
             KategoriSeeder::class,

@@ -150,7 +150,6 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when filters change
     const filterInputs = document.querySelectorAll('#filter_kategori, #filter_rak, #filter_tahun, #filter_stok');
     filterInputs.forEach(input => {
         input.addEventListener('change', function() {

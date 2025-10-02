@@ -19,13 +19,10 @@
                 </h5>
             </div>
             <div class="card-body">
-                {{-- ====================================================== --}}
-                {{-- <<<--- PERBAIKAN: Tambahkan enctype di sini ---<<< --}}
-                {{-- ====================================================== --}}
+
                 <form action="{{ route('anggota.store') }}" method="POST" id="formAnggota" enctype="multipart/form-data">
                     @csrf
-                    
-                    {{-- ... Sisa isi form Anda tetap sama ... --}}
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -37,15 +34,12 @@
                                        id="nomor_anggota" 
                                        name="nomor_anggota" 
                                        value="{{ old('nomor_anggota') }}"
-                                       placeholder="Contoh: 1-PPUS-2025 atau 01-PPUS-2025"
+                                       placeholder="Contoh: 00001-Perpus-2025"
                                        required>
                                 @error('nomor_anggota')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Format: X-PPUS-YYYY atau XX-PPUS-YYYY (contoh: 1-PPUS-2025, 01-PPUS-2025). Sesuai ketentuan admin.
-                                </div>
+                                
                             </div>
                         </div>
                         
@@ -261,23 +255,20 @@
 
 @section('scripts')
 <script>
-// Auto generate nomor anggota
+
 document.addEventListener('DOMContentLoaded', function() {
     generateNomorAnggota();
 });
 
-
-
 function resetForm() {
     document.getElementById('formAnggota').reset();
     generateNomorAnggota();
-    // Reset validation classes
+
     document.querySelectorAll('.is-invalid').forEach(el => {
         el.classList.remove('is-invalid');
     });
 }
 
-// Validasi form sebelum submit
 document.getElementById('formAnggota').addEventListener('submit', function(e) {
     const requiredFields = ['nomor_anggota', 'nama_lengkap', 'jenis_kelamin', 'kelas', 'alamat', 'tanggal_daftar'];
     let isValid = true;
@@ -304,7 +295,6 @@ document.getElementById('formAnggota').addEventListener('submit', function(e) {
     }
 });
 
-// Validasi format nomor anggota
 document.getElementById('nomor_anggota').addEventListener('input', function(e) {
     const value = e.target.value;
     const pattern = /^\d{1,7}-PPUS-\d{4}$/;
@@ -318,11 +308,9 @@ document.getElementById('nomor_anggota').addEventListener('input', function(e) {
     }
 });
 
-// Format nomor telepon
 document.getElementById('telepon').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, ''); // Hapus semua non-digit
-    
-    // Batasi maksimal 15 digit
+    let value = e.target.value.replace(/\D/g, '');
+
     if (value.length > 15) {
         value = value.substring(0, 15);
     }
@@ -330,7 +318,6 @@ document.getElementById('telepon').addEventListener('input', function(e) {
     e.target.value = value;
 });
 
-// Validasi real-time
 document.querySelectorAll('input, select, textarea').forEach(input => {
     input.addEventListener('blur', function() {
         if (this.hasAttribute('required') || this.value.trim()) {
@@ -345,9 +332,6 @@ document.querySelectorAll('input, select, textarea').forEach(input => {
     });
 });
 
-
-
-// Konfirmasi sebelum meninggalkan halaman jika ada perubahan
 let formChanged = false;
 document.getElementById('formAnggota').addEventListener('change', function() {
     formChanged = true;

@@ -98,7 +98,7 @@
 @section('scripts')
 <script>
 $(document).ready(function() {
-    // Initialize Select2 for Anggota
+
     $('.select2-anggota').select2({
         theme: 'bootstrap-5',
         placeholder: 'Pilih Anggota',
@@ -114,7 +114,6 @@ $(document).ready(function() {
         }
     });
 
-    // Initialize Select2 for Buku
     $('.select2-buku').select2({
         theme: 'bootstrap-5',
         placeholder: 'Pilih Buku',
@@ -130,17 +129,15 @@ $(document).ready(function() {
         }
     });
 
-    // Show stok info when buku is selected
     $('#buku_id').on('change', function() {
         const selectedOption = $(this).find('option:selected');
         const stok = selectedOption.data('stok');
         const kode = selectedOption.data('kode');
         
         if (stok !== undefined && kode !== undefined) {
-            // Remove existing info
+
             $('.stok-info').remove();
-            
-            // Add stok info
+
             const infoHtml = `
                 <div class="alert alert-info stok-info mt-2">
                     <i class="fas fa-info-circle me-2"></i>
@@ -153,7 +150,6 @@ $(document).ready(function() {
         }
     });
 
-    // Show initial stok info if buku is already selected
     const initialBukuId = $('#buku_id').val();
     if (initialBukuId) {
         const selectedOption = $('#buku_id option:selected');
@@ -171,7 +167,6 @@ $(document).ready(function() {
         }
     }
 
-    // Form validation
     $('#formPeminjaman').on('submit', function(e) {
         const anggotaId = $('#anggota_id').val();
         const bukuId = $('#buku_id').val();
@@ -190,7 +185,6 @@ $(document).ready(function() {
             return false;
         }
 
-        // Check if return date is after loan date
         if (tanggalKembali <= tanggalPinjam) {
             e.preventDefault();
             Swal.fire({

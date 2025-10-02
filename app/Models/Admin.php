@@ -43,25 +43,16 @@ class Admin extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Scope untuk admin yang aktif
-     */
     public function scopeActive($query)
     {
         return $query->where('status', 'aktif');
     }
 
-    /**
-     * Cek apakah admin adalah super admin
-     */
     public function isSuperAdmin()
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Cek apakah admin adalah kepala perpustakaan
-     */
     public function isKepalaPerpus()
     {
         return $this->role === 'kepala_perpus';

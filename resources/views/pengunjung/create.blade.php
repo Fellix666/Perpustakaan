@@ -72,7 +72,6 @@
                 </div>
             </div>
 
-            <!-- Tombol Submit -->
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="d-flex gap-2">
@@ -130,28 +129,23 @@ $(document).ready(function() {
             }
         }
     });
-    
-    // Auto-select anggota jika ada dari parameter
+
     @if(isset($selectedAnggotaId) && $selectedAnggotaId)
         $('#anggota_id').val('{{ $selectedAnggotaId }}').trigger('change');
     @endif
 
-    // Event ketika anggota dipilih
     $('#anggota_id').on('select2:select', function(e) {
         checkFormValidity();
     });
 
-    // Event ketika anggota dihapus
     $('#anggota_id').on('select2:clear', function(e) {
         checkFormValidity();
     });
 
-    // Event ketika tujuan kunjungan dipilih
     $('#tujuan_kunjungan').on('change', function() {
         checkFormValidity();
     });
 
-    // Fungsi untuk mengecek validitas form
     function checkFormValidity() {
         var anggotaSelected = $('#anggota_id').val() !== '' && $('#anggota_id').val() !== null;
         var tujuanSelected = $('#tujuan_kunjungan').val() !== '';
@@ -163,11 +157,9 @@ $(document).ready(function() {
         }
     }
 
-    // Cek validitas form saat halaman dimuat
     checkFormValidity();
 });
 
-// Fungsi untuk reset pencarian
 function resetSearch() {
     $('#anggota_id').val(null).trigger('change');
     $('#tujuan_kunjungan').val('');

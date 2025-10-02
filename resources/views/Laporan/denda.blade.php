@@ -168,7 +168,6 @@
                                 <td>{{ $peminjaman->tanggal_kembali_rencana->format('d/m/Y') ?? '-' }}</td>
                                 <td><span class="badge bg-warning">Terlambat Aktif</span></td>
                                 @php
-                                    // Perbaikan perhitungan hari terlambat
                                     $tanggalSekarang = \Carbon\Carbon::now()->startOfDay();
                                     $tanggalKembali = $peminjaman->tanggal_kembali_rencana->startOfDay();
                                     $hariTerlambat = max(0, $tanggalKembali->diffInDays($tanggalSekarang, false));
@@ -224,22 +223,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedValue = jenisLaporan.value;
         
         if (selectedValue === 'pengumuman') {
-            // Untuk pengumuman, tampilkan semua filter
+
             tahunAjaranContainer.style.display = 'block';
             dateRangeContainer.style.display = 'block';
             endDateContainer.style.display = 'block';
         } else {
-            // Untuk tahunan, sembunyikan filter tanggal
+
             tahunAjaranContainer.style.display = 'block';
             dateRangeContainer.style.display = 'none';
             endDateContainer.style.display = 'none';
         }
     }
-    
-    // Jalankan saat halaman dimuat
+
     toggleFilters();
-    
-    // Jalankan saat jenis laporan berubah
+
     jenisLaporan.addEventListener('change', toggleFilters);
 });
 </script>

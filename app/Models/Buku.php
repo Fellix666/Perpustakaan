@@ -29,9 +29,7 @@ class Buku extends Model
     {
         return $this->hasMany(Peminjaman::class);
     }
-    
-    // Method peminjamanAktif() tidak lagi diperlukan untuk manajemen stok,
-    // tapi bisa dipertahankan untuk keperluan lain jika ada.
+
     public function peminjamanAktif()
     {
         return $this->hasMany(Peminjaman::class)->whereIn('status', ['dipinjam', 'terlambat']);

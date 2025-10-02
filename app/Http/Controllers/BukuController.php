@@ -7,10 +7,10 @@ use App\Models\Kategori;
 use App\Models\Rak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage; // <-- Pastikan ini ada
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use ZipArchive; // <-- Pastikan ini ada
+use ZipArchive;
 
 class BukuController extends Controller
 {
@@ -18,22 +18,18 @@ class BukuController extends Controller
     {
         $query = Buku::with(['kategori', 'rak']);
         
-        // Filter berdasarkan kategori
         if ($request->filled('kategori_id')) {
             $query->where('kategori_id', $request->kategori_id);
         }
         
-        // Filter berdasarkan rak
         if ($request->filled('rak_id')) {
             $query->where('rak_id', $request->rak_id);
         }
         
-        // Filter berdasarkan tahun terbit
         if ($request->filled('tahun_terbit')) {
             $query->where('tahun_terbit', $request->tahun_terbit);
         }
         
-        // Filter berdasarkan status stok
         if ($request->filled('status')) {
             if ($request->status === 'tersedia') {
                 $query->where('stok_tersedia', '>', 0);
@@ -42,7 +38,6 @@ class BukuController extends Controller
             }
         }
         
-        // Search
         if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function($q) use ($search) {
@@ -54,7 +49,6 @@ class BukuController extends Controller
         
         $bukus = $query->orderBy('kode_buku')->paginate(15);
         
-        // Data untuk filter dropdown
         $kategoris = Kategori::orderBy('nama_kategori')->get();
         $raks = Rak::orderBy('nama_rak')->get();
         $tahunTerbitList = Buku::distinct()->pluck('tahun_terbit')->sort()->values();
@@ -72,9 +66,6 @@ class BukuController extends Controller
         return view('buku.create', compact('kategoris', 'raks'));
     }
 
-    /**
-     * PERBAIKAN: Menyeragamkan cara menyimpan file cover.
-     */
     public function store(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -126,9 +117,6 @@ class BukuController extends Controller
         return view('buku.edit', compact('buku', 'kategoris', 'raks'));
     }
 
-    /**
-     * PERBAIKAN: Menyeragamkan cara menyimpan file cover dan menghapus yang lama.
-     */
     public function update(Request $request, Buku $buku)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -153,7 +141,6 @@ class BukuController extends Controller
         $data = $request->except('cover');
 
         if ($request->hasFile('cover')) {
-            // Hapus cover lama jika ada
             if ($buku->cover && Storage::disk('public')->exists('buku/' . $buku->cover)) {
                 Storage::disk('public')->delete('buku/' . $buku->cover);
             }
@@ -162,8 +149,7 @@ class BukuController extends Controller
             $file->storeAs('buku', $filename, 'public');
             $data['cover'] = $filename;
         }
-        
-        // Update stok tersedia jika stok total berubah
+
         if ($request->stok_total != $buku->stok_total) {
             $selisih = $request->stok_total - $buku->stok_total;
             $data['stok_tersedia'] = max(0, $buku->stok_tersedia + $selisih);
@@ -173,15 +159,11 @@ class BukuController extends Controller
         return redirect()->route('buku.index')->with('success', 'Buku berhasil diperbarui');
     }
 
-    /**
-     * PERBAIKAN: Menambahkan logika untuk menghapus file cover.
-     */
     public function destroy(Buku $buku)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
-        // Hapus cover jika ada
         if ($buku->cover && Storage::disk('public')->exists('buku/' . $buku->cover)) {
             Storage::disk('public')->delete('buku/' . $buku->cover);
         }
@@ -201,13 +183,11 @@ class BukuController extends Controller
         }
         
         try {
-            // Ambil parameter filter
             $filterKategori = $request->get('filter_kategori');
             $filterRak = $request->get('filter_rak');
             $filterTahun = $request->get('filter_tahun');
             $filterStok = $request->get('filter_stok');
             
-            // Query buku berdasarkan filter
             $query = Buku::with(['kategori', 'rak']);
             
             if ($filterKategori) {
@@ -246,13 +226,11 @@ class BukuController extends Controller
         }
         
         try {
-            // Ambil parameter filter
             $filterKategori = $request->get('filter_kategori');
             $filterRak = $request->get('filter_rak');
             $filterTahun = $request->get('filter_tahun');
             $filterStok = $request->get('filter_stok');
             
-            // Query buku berdasarkan filter
             $query = Buku::with(['kategori', 'rak']);
             
             if ($filterKategori) {
@@ -277,7 +255,6 @@ class BukuController extends Controller
             
             $books = $query->orderBy('kode_buku')->get();
 
-            // Get filter data
             $kategoris = Kategori::orderBy('nama_kategori')->get();
             $raks = Rak::orderBy('nama_rak')->get();
             $tahunTerbitList = Buku::distinct()->pluck('tahun_terbit')->sort()->values();
@@ -345,13 +322,10 @@ class BukuController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $header = [];
             $rowCount = 0;
-            
-            // OPTIMASI: Baca data per chunk untuk menghemat memory
-            $chunkSize = 100; // Proses 100 baris sekaligus
+            $chunkSize = 100;
             $imported = 0;
             $totalRows = $sheet->getHighestRow();
             
-            // Ambil data kategori dan rak untuk mapping (cached)
             $kategoris = \App\Models\Kategori::all()->keyBy('kode_kategori');
             $raks = \App\Models\Rak::all()->keyBy('kode_rak');
             
@@ -371,15 +345,12 @@ class BukuController extends Controller
                 $rows[] = array_combine($header, $cells);
                 $rowCount++;
                 
-                // Proses per chunk untuk menghemat memory
                 if ($rowCount % $chunkSize === 0 || $i === $totalRows) {
                     $imported += $this->processBukuImportChunk($rows, $errors, $kategoris, $raks);
-                    $rows = []; // Reset array untuk chunk berikutnya
-                    
-                    // Feedback progress untuk data besar
+                    $rows = [];
+
                     if ($totalRows > 1000) {
                         $progress = round(($i / $totalRows) * 100, 1);
-                        // Bisa ditambahkan progress bar di frontend
                     }
                 }
             }
@@ -399,10 +370,7 @@ class BukuController extends Controller
             return back()->with('error', 'Tidak ada data yang berhasil diimport. '.implode(' | ', array_slice($errors, 0, 10)));
         }
     }
-    
-    /**
-     * Memproses chunk data import buku untuk menghemat memory
-     */
+
     private function processBukuImportChunk($rows, &$errors, $kategoris, $raks)
     {
         $imported = 0;
@@ -412,37 +380,30 @@ class BukuController extends Controller
                 $errors[] = "Baris ke-".($i+2).": Data wajib tidak lengkap.";
                 continue;
             }
-            
-            // Cek apakah menggunakan kode atau ID
+
             $kategoriId = null;
             $rakId = null;
-            
-            // Cek kategori
+
             if (!empty($row['kode_kategori'])) {
-                // Menggunakan kode kategori
                 if (!$kategoris->has($row['kode_kategori'])) {
                     $errors[] = "Baris ke-".($i+2).": Kode kategori '{$row['kode_kategori']}' tidak ditemukan.";
                     continue;
                 }
                 $kategoriId = $kategoris->get($row['kode_kategori'])->id;
             } elseif (!empty($row['kategori_id'])) {
-                // Menggunakan ID kategori (backward compatibility)
                 $kategoriId = $row['kategori_id'];
             } else {
                 $errors[] = "Baris ke-".($i+2).": Kode kategori atau kategori_id harus diisi.";
                 continue;
             }
             
-            // Cek rak
             if (!empty($row['kode_rak'])) {
-                // Menggunakan kode rak
                 if (!$raks->has($row['kode_rak'])) {
                     $errors[] = "Baris ke-".($i+2).": Kode rak '{$row['kode_rak']}' tidak ditemukan.";
                     continue;
                 }
                 $rakId = $raks->get($row['kode_rak'])->id;
             } elseif (!empty($row['rak_id'])) {
-                // Menggunakan ID rak (backward compatibility)
                 $rakId = $row['rak_id'];
             } else {
                 $errors[] = "Baris ke-".($i+2).": Kode rak atau rak_id harus diisi.";
@@ -469,7 +430,6 @@ class BukuController extends Controller
                     'kategori_id' => $kategoriId,
                     'rak_id' => $rakId,
                     'status' => $row['status'] ?? 'tersedia',
-                    // 'cover' => $row['cover'] ?? null, // cover diisi manual lewat aplikasi
                 ]);
                 $imported++;
             } catch (\Exception $e) {

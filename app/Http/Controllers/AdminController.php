@@ -9,12 +9,8 @@ use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
-    /**
-     * Menampilkan daftar admin (hanya untuk super admin)
-     */
     public function index()
     {
-        // Hanya admin dengan role 'admin' yang bisa akses
         if (auth('admin')->user()->role !== 'admin') {
             abort(403, 'Akses hanya untuk Administrator');
         }
@@ -22,10 +18,6 @@ class AdminController extends Controller
         $admins = Admin::orderBy('name')->paginate(10);
         return view('admin.index', compact('admins'));
     }
-
-    /**
-     * Menampilkan form tambah admin
-     */
     public function create()
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -34,10 +26,6 @@ class AdminController extends Controller
         
         return view('admin.create');
     }
-
-    /**
-     * Menyimpan admin baru
-     */
     public function store(Request $request)
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -61,10 +49,6 @@ class AdminController extends Controller
         return redirect()->route('admin.index')
                         ->with('success', 'Admin berhasil ditambahkan');
     }
-
-    /**
-     * Menampilkan detail admin
-     */
     public function show(Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -73,10 +57,6 @@ class AdminController extends Controller
         
         return view('admin.show', compact('admin'));
     }
-
-    /**
-     * Menampilkan form edit admin
-     */
     public function edit(Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -85,10 +65,6 @@ class AdminController extends Controller
         
         return view('admin.edit', compact('admin'));
     }
-
-    /**
-     * Update data admin
-     */
     public function update(Request $request, Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -115,23 +91,15 @@ class AdminController extends Controller
         return redirect()->route('admin.index')
                         ->with('success', 'Data admin berhasil diperbarui');
     }
-
-    /**
-     * Hapus admin
-     */
     public function destroy(Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
             abort(403, 'Akses hanya untuk Administrator');
         }
-        
-        // Mencegah admin menghapus dirinya sendiri
         if ($admin->id === auth('admin')->id()) {
             return redirect()->route('admin.index')
                             ->with('error', 'Tidak dapat menghapus akun sendiri');
         }
-        
-        // Mencegah menghapus admin terakhir
         if (Admin::count() <= 1) {
             return redirect()->route('admin.index')
                             ->with('error', 'Tidak dapat menghapus admin terakhir');
@@ -142,10 +110,6 @@ class AdminController extends Controller
         return redirect()->route('admin.index')
                         ->with('success', 'Admin berhasil dihapus');
     }
-
-    /**
-     * Reset password admin
-     */
     public function resetPassword(Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
@@ -159,27 +123,18 @@ class AdminController extends Controller
         return redirect()->route('admin.index')
                         ->with('success', "Password admin {$admin->name} berhasil direset menjadi: {$newPassword}");
     }
-
-    /**
-     * Toggle status aktif/nonaktif admin
-     */
     public function toggleStatus(Admin $admin)
     {
         if (auth('admin')->user()->role !== 'admin') {
             abort(403, 'Akses hanya untuk Administrator');
         }
-        
-        // Mencegah admin menonaktifkan dirinya sendiri
         if ($admin->id === auth('admin')->id()) {
             return redirect()->route('admin.index')
                             ->with('error', 'Tidak dapat menonaktifkan akun sendiri');
         }
-        
         $admin->status = $admin->status === 'aktif' ? 'nonaktif' : 'aktif';
         $admin->save();
-        
         $statusText = $admin->status === 'aktif' ? 'diaktifkan' : 'dinonaktifkan';
-        
         return redirect()->route('admin.index')
                         ->with('success', "Admin {$admin->name} berhasil {$statusText}");
     }

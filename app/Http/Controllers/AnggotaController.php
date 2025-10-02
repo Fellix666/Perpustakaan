@@ -10,9 +10,6 @@ use ZipArchive;
 
 class AnggotaController extends Controller
 {
-    /**
-     * Mendapatkan daftar kelas yang tersedia
-     */
     private function getKelasList()
     {
         return [
@@ -29,10 +26,8 @@ class AnggotaController extends Controller
 
     private function getTahunAjaranList()
     {
-        // Ambil tahun ajaran saat ini (tahun ini)
         $currentYear = date('Y');
         
-        // Buat 5 tahun ajaran terakhir
         $tahunAjaranList = [];
         for ($i = 4; $i >= 0; $i--) {
             $tahun = $currentYear - $i;
@@ -71,9 +66,6 @@ class AnggotaController extends Controller
         return view('anggota.create');
     }
 
-    /**
-     * PERBAIKAN: Menyeragamkan cara menyimpan file.
-     */
     public function store(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -93,13 +85,12 @@ class AnggotaController extends Controller
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
         
-        $data = $request->except('foto'); // Ambil semua data kecuali foto
+        $data = $request->except('foto');
         $data['status'] = 'aktif';
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $filename = uniqid('anggota_') . '.' . $file->getClientOriginalExtension();
-            // Simpan file menggunakan metode yang sama dengan ZIP upload
             $file->storeAs('anggota', $filename, 'public');
             $data['foto'] = $filename;
         }
@@ -125,16 +116,13 @@ class AnggotaController extends Controller
         return view('anggota.edit', compact('anggota'));
     }
 
-    /**
-     * PERBAIKAN: Menyeragamkan cara menyimpan file.
-     */
     public function update(Request $request, Anggota $anggota)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
         $request->validate([
-            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id . '|regex:/^\d{1,7}-PPUS-\d{4}$/',
+            'nomor_anggota' => 'required|unique:anggotas,nomor_anggota,' . $anggota->id . '|regex:/^\d{1,7}-Perpus-\d{4}$/',
             'nama_lengkap' => 'required|max:100',
             'tempat_lahir' => 'required|max:100',
             'tanggal_lahir' => 'required|date',
@@ -151,13 +139,11 @@ class AnggotaController extends Controller
         $data = $request->except('foto');
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama
             if ($anggota->foto && Storage::disk('public')->exists('anggota/' . $anggota->foto)) {
                 Storage::disk('public')->delete('anggota/' . $anggota->foto);
             }
             $file = $request->file('foto');
             $filename = uniqid('anggota_') . '.' . $file->getClientOriginalExtension();
-            // Simpan file menggunakan metode yang sama dengan ZIP upload
             $file->storeAs('anggota', $filename, 'public');
             $data['foto'] = $filename;
         }
@@ -166,7 +152,6 @@ class AnggotaController extends Controller
         return redirect()->route('anggota.index')->with('success', 'Anggota berhasil diperbarui');
     }
 
-    // ... sisa method Anda (destroy, card, dll.) tetap sama ...
     public function destroy(Anggota $anggota)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -188,26 +173,20 @@ class AnggotaController extends Controller
             abort(403, 'Akses hanya untuk admin');
         }
         
-        // Default warna jika tidak ada parameter
         $color = request('color', 'blue');
         
         return view('anggota.card', compact('anggota', 'color'));
     }
 
-    /**
-     * Cetak kartu anggota massal berdasarkan kelas dan tahun ajaran
-     */
     public function printCards(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
         
-        // Ambil data untuk filter
         $kelasFilterList = $this->getKelasFilterList();
         $tahunAjaranList = $this->getTahunAjaranList();
         
-        // Filter berdasarkan request
         $selectedKelas = $request->get('kelas');
         $selectedTahun = $request->get('tahun_daftar');
         
@@ -215,13 +194,10 @@ class AnggotaController extends Controller
             $query = Anggota::where('status', 'aktif');
             
             if ($selectedKelas) {
-                // Filter berdasarkan tingkat kelas (VII, VIII, IX)
-                // Gunakan exact match untuk menghindari konflik VII vs VIII
                 $query->where('kelas', 'like', $selectedKelas . ' %');
             }
             
             if ($selectedTahun) {
-                // Parse tahun ajaran format (2024/2025) menjadi tahun pertama
                 $tahun = explode('/', $selectedTahun)[0];
                 $query->where('tahun_ajaran_masuk', $tahun);
             }
@@ -236,32 +212,23 @@ class AnggotaController extends Controller
             'selectedKelas', 'selectedTahun'
         ));
     }
-
-    /**
-     * Cetak kartu anggota massal (print view)
-     */
     public function printCardsView(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
         
-        // Ambil parameter filter
         $selectedKelas = $request->get('kelas');
         $selectedTahun = $request->get('tahun_daftar');
-        $cardColor = $request->get('color', 'blue'); // Default biru
+        $cardColor = $request->get('color', 'blue');
         
-        // Query anggota berdasarkan filter
         $query = Anggota::where('status', 'aktif');
         
         if ($selectedKelas) {
-            // Filter berdasarkan tingkat kelas (VII, VIII, IX)
-            // Gunakan exact match untuk menghindari konflik VII vs VIII
             $query->where('kelas', 'like', $selectedKelas . ' %');
         }
         
         if ($selectedTahun) {
-            // Parse tahun ajaran format (2024/2025) menjadi tahun pertama
             $tahun = explode('/', $selectedTahun)[0];
             $query->where('tahun_ajaran_masuk', $tahun);
         }
@@ -285,7 +252,6 @@ class AnggotaController extends Controller
             ->first();
         
         if ($lastAnggota) {
-            // Ambil nomor urut dari nomor anggota terakhir (01, 02, 03, dst)
             $lastNumber = (int) substr($lastAnggota->nomor_anggota, 0, 2);
             $newNumber = str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
         } else {
@@ -316,12 +282,10 @@ class AnggotaController extends Controller
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         
-        // Header
         $sheet->fromArray([
             ['No', 'Nomor Anggota', 'Nama Lengkap', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Kelas', 'Alamat', 'Telepon', 'Tanggal Daftar', 'Tahun Ajaran Masuk', 'Status']
         ], null, 'A1');
         
-        // Data
         $rowNum = 2;
         foreach ($anggotas as $index => $anggota) {
             $sheet->fromArray([
@@ -365,8 +329,7 @@ class AnggotaController extends Controller
             $header = [];
             $rowCount = 0;
             
-            // OPTIMASI: Baca data per chunk untuk menghemat memory
-            $chunkSize = 100; // Proses 100 baris sekaligus
+            $chunkSize = 100;
             $imported = 0;
             $totalRows = $sheet->getHighestRow();
             
@@ -386,15 +349,12 @@ class AnggotaController extends Controller
                 $rows[] = array_combine($header, $cells);
                 $rowCount++;
                 
-                // Proses per chunk untuk menghemat memory
                 if ($rowCount % $chunkSize === 0 || $i === $totalRows) {
                     $imported += $this->processImportChunk($rows, $errors);
-                    $rows = []; // Reset array untuk chunk berikutnya
+                    $rows = [];
                     
-                    // Feedback progress untuk data besar
                     if ($totalRows > 1000) {
                         $progress = round(($i / $totalRows) * 100, 1);
-                        // Bisa ditambahkan progress bar di frontend
                     }
                 }
             }
@@ -409,9 +369,6 @@ class AnggotaController extends Controller
         return back()->with($imported > 0 ? 'success' : 'error', $msg);
     }
     
-    /**
-     * Memproses chunk data import untuk menghemat memory
-     */
     private function processImportChunk($rows, &$errors)
     {
         $imported = 0;
@@ -469,12 +426,10 @@ class AnggotaController extends Controller
             return null;
         }
         
-        // Jika format "2023/2024", kembalikan as is
         if (strpos($value, '/') !== false) {
             return $value;
         }
         
-        // Jika sudah berupa angka tahun, konversi ke format YYYY/YYYY+1
         if (is_numeric($value)) {
             $year = (int) $value;
             return $year . '/' . ($year + 1);
@@ -483,9 +438,6 @@ class AnggotaController extends Controller
         return null;
     }
 
-    /**
-     * Memproses upload foto massal dari file ZIP.
-     */
     public function prosesUploadFotoZip(Request $request)
     {
         if (auth('admin')->user()->role === 'kepala_perpus') {
@@ -509,14 +461,10 @@ class AnggotaController extends Controller
 
         $semuaAnggota = Anggota::all()->keyBy('nomor_anggota');
 
-        // =================================================================
-        // <<<--- PERBAIKAN FINAL: EKSTRAKSI MANUAL ---<<<
-        // =================================================================
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $fileName = $zip->getNameIndex($i);
             $fileInfo = pathinfo($fileName);
 
-            // Lewati folder atau file tersembunyi
             if (substr($fileName, -1) == '/' || str_starts_with(basename($fileName), '._') || str_contains($fileName, '__MACOSX')) {
                 continue;
             }
@@ -543,7 +491,6 @@ class AnggotaController extends Controller
             }
         }
         $zip->close();
-        // =================================================================
 
         $pesan = "$berhasil foto anggota berhasil diupdate.";
         if ($gagal > 0) {

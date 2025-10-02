@@ -18,14 +18,11 @@
                 <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Form Edit Anggota</h5>
             </div>
             <div class="card-body">
-                {{-- ====================================================== --}}
-                {{-- <<<--- PERBAIKAN: Tambahkan enctype di sini ---<<< --}}
-                {{-- ====================================================== --}}
+
                 <form action="{{ route('anggota.update', $anggota) }}" method="POST" id="formAnggota" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
-                    
-                    {{-- ... Sisa isi form Anda tetap sama ... --}}
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">

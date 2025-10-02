@@ -16,12 +16,10 @@ class PengunjungController extends Controller
     {
         $query = Pengunjung::with('anggota');
 
-        // Filter berdasarkan tanggal
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
         }
 
-        // Filter berdasarkan tujuan
         if ($request->filled('tujuan')) {
             $query->where('tujuan_kunjungan', $request->tujuan);
         }
@@ -38,8 +36,7 @@ class PengunjungController extends Controller
         if (auth('admin')->user()->role === 'kepala_perpus') {
             abort(403, 'Akses hanya untuk admin');
         }
-        
-        // Jika ada anggota_id yang dikirim dari parameter (misal dari peminjaman)
+
         $selectedAnggotaId = $request->get('anggota_id');
         
         return view('pengunjung.create', compact('selectedAnggotaId'));
@@ -64,15 +61,14 @@ class PengunjungController extends Controller
             'keterangan' => $request->keterangan
         ]);
 
-        // Redirect berdasarkan tujuan kunjungan
         switch ($request->tujuan_kunjungan) {
             case 'pinjam':
                 return redirect()->route('peminjaman.create', ['anggota_id' => $request->anggota_id])
-                               ->with('success', 'Data kunjungan berhasil dicatat. Silakan lanjutkan dengan peminjaman buku.');
+                            ->with('success', 'Data kunjungan berhasil dicatat. Silakan lanjutkan dengan peminjaman buku.');
             
             case 'baca':
                 return redirect()->route('pengunjung.index')
-                               ->with('success', 'Data kunjungan berhasil dicatat. Anggota sedang membaca di perpustakaan.');
+                            ->with('success', 'Data kunjungan berhasil dicatat. Anggota sedang membaca di perpustakaan.');
         }
     }
 
@@ -121,7 +117,6 @@ class PengunjungController extends Controller
                         ->with('success', 'Data kunjungan berhasil dihapus.');
     }
 
-    // Method untuk mencari anggota
     public function searchAnggota(Request $request)
     {
         $search = $request->get('search');
@@ -131,43 +126,34 @@ class PengunjungController extends Controller
         }
         
         $anggotas = Anggota::where('status', 'aktif')
-                           ->where(function($query) use ($search) {
-                               $query->where('nomor_anggota', 'like', "%{$search}%")
-                                     ->orWhere('nama_lengkap', 'like', "%{$search}%")
-                                     ->orWhere('kelas', 'like', "%{$search}%");
-                           })
-                           ->orderBy('nama_lengkap')
-                           ->limit(10)
-                           ->get(['id', 'nomor_anggota', 'nama_lengkap', 'kelas']);
+                        ->where(function($query) use ($search) {
+                            $query->where('nomor_anggota', 'like', "%{$search}%")
+                                    ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                                    ->orWhere('kelas', 'like', "%{$search}%");
+                        })
+                        ->orderBy('nama_lengkap')
+                        ->limit(10)
+                        ->get(['id', 'nomor_anggota', 'nama_lengkap', 'kelas']);
 
         return response()->json($anggotas);
     }
 
-    // Method untuk menyelesaikan kunjungan
-
-
-    // Method untuk laporan kunjungan tahunan (format seperti gambar)
     public function laporan(Request $request)
     {
-        // Dapatkan tahun ajaran yang tersedia
         $availableYears = $this->getAvailableAcademicYears();
-        
-        // Set tahun ajaran default ke tahun terbaru yang tersedia
+
         $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
         $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
-        
-        // Pastikan tahun ajaran adalah integer
+
         if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
             $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
         } else {
             $tahunAjaran = (int) $tahunAjaran;
         }
-        
-        // Tentukan periode tahun ajaran (Juli-Juni)
+
         $startDate = $tahunAjaran . '-07-01';
         $endDate = ($tahunAjaran + 1) . '-06-30';
-        
-        // Dapatkan data pengunjung per bulan per kelas
+
         $summaryData = $this->getPengunjungSummary($startDate, $endDate);
         
         return view('pengunjung.laporan', compact(
@@ -175,30 +161,23 @@ class PengunjungController extends Controller
         ));
     }
 
-    /**
-     * Print laporan pengunjung
-     */
     public function printLaporan(Request $request)
     {
-        // Dapatkan tahun ajaran yang tersedia
+
         $availableYears = $this->getAvailableAcademicYears();
-        
-        // Set tahun ajaran default ke tahun terbaru yang tersedia
+
         $defaultYear = $availableYears->isNotEmpty() ? $availableYears->first() : Carbon::now()->format('Y');
         $tahunAjaran = $request->get('tahun_ajaran', $defaultYear);
-        
-        // Pastikan tahun ajaran adalah integer
+
         if (is_string($tahunAjaran) && strpos($tahunAjaran, '/') !== false) {
             $tahunAjaran = (int) explode('/', $tahunAjaran)[0];
         } else {
             $tahunAjaran = (int) $tahunAjaran;
         }
-        
-        // Tentukan periode tahun ajaran (Juli-Juni)
+
         $startDate = $tahunAjaran . '-07-01';
         $endDate = ($tahunAjaran + 1) . '-06-30';
-        
-        // Dapatkan data pengunjung per bulan per kelas
+
         $summaryData = $this->getPengunjungSummary($startDate, $endDate);
         
         return view('pengunjung.print.laporan', compact(
@@ -206,15 +185,11 @@ class PengunjungController extends Controller
         ));
     }
 
-    /**
-     * Mendapatkan tahun ajaran yang tersedia (3 tahun ajaran terakhir)
-     */
     private function getAvailableAcademicYears()
     {
-        // Ambil tahun ajaran saat ini (tahun ini)
+
         $currentYear = date('Y');
-        
-        // Buat 3 tahun ajaran terakhir (tahun sekarang + 2 tahun sebelumnya)
+
         $academicYears = collect();
         for ($i = 2; $i >= 0; $i--) {
             $tahun = $currentYear - $i;
@@ -224,14 +199,10 @@ class PengunjungController extends Controller
         return $academicYears;
     }
 
-    /**
-     * Mendapatkan summary pengunjung per kelas dan bulan
-     */
     private function getPengunjungSummary($startDate, $endDate)
     {
         $summary = [];
-        
-        // Ambil data pengunjung per kelas per bulan
+
         $pengunjungData = Pengunjung::join('anggotas', 'pengunjungs.anggota_id', '=', 'anggotas.id')
             ->select(
                 'anggotas.kelas',
@@ -245,18 +216,15 @@ class PengunjungController extends Controller
             ->orderBy('bulan')
             ->orderBy('anggotas.kelas')
             ->get();
-        
-        // Buat struktur data lengkap untuk semua bulan (Juli-Juni)
+
         $startYear = (int) date('Y', strtotime($startDate));
         $endYear = (int) date('Y', strtotime($endDate));
-        
-        // Daftar semua bulan dalam tahun ajaran (Juli-Juni)
+
         $bulanList = [
             7 => 'Jul', 8 => 'Agt', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
             1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun'
         ];
-        
-        // Inisialisasi semua bulan dengan data kosong
+
         foreach ($bulanList as $bulan => $namaBulan) {
             $tahun = ($bulan >= 7) ? $startYear : $endYear;
             $bulanKey = $tahun . '-' . str_pad($bulan, 2, '0', STR_PAD_LEFT);
@@ -270,8 +238,7 @@ class PengunjungController extends Controller
                 ]
             ];
         }
-        
-        // Isi data yang ada
+
         foreach ($pengunjungData as $item) {
             $bulanKey = $item->tahun . '-' . str_pad($item->bulan, 2, '0', STR_PAD_LEFT);
             if (isset($summary[$bulanKey])) {

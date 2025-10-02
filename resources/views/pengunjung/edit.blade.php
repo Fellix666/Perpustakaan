@@ -15,7 +15,6 @@
         <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Selesai Kunjungan</h5>
     </div>
     <div class="card-body">
-        <!-- Informasi Kunjungan -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="alert alert-info">

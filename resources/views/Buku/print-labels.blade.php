@@ -50,8 +50,8 @@
         .label-container {
             background: white;
             border: 2px solid #000;
-            width: 300px;
-            height: 120px;
+            width: 200px;
+            height: 80px;
             position: relative;
             page-break-inside: avoid;
             margin: 5px;
@@ -60,18 +60,18 @@
         .label-header {
             background: #000;
             color: white;
-            padding: 8px 12px;
+            padding: 4px 8px;
             text-align: center;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 9px;
             border-bottom: 1px solid #000;
         }
 
         .label-body {
-            padding: 8px 12px;
-            font-size: 10px;
-            line-height: 1.2;
-            height: calc(100% - 35px);
+            padding: 4px 8px;
+            font-size: 8px;
+            line-height: 1.1;
+            height: calc(100% - 25px);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -79,36 +79,36 @@
 
         .book-code {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 12px;
             color: #000;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             text-align: center;
             border-bottom: 1px solid #ccc;
-            padding-bottom: 2px;
+            padding-bottom: 1px;
         }
 
         .book-title {
             font-weight: bold;
             color: #000;
-            margin-bottom: 2px;
-            line-height: 1.1;
-            font-size: 11px;
+            margin-bottom: 1px;
+            line-height: 1.0;
+            font-size: 8px;
             text-align: center;
         }
 
         .book-author {
             color: #000;
-            margin-bottom: 2px;
-            font-size: 10px;
+            margin-bottom: 1px;
+            font-size: 7px;
             text-align: center;
         }
 
         .book-info {
             color: #000;
-            font-size: 9px;
+            font-size: 6px;
             text-align: center;
             border-top: 1px solid #ccc;
-            padding-top: 2px;
+            padding-top: 1px;
             margin-top: auto;
         }
 
@@ -153,15 +153,15 @@
             }
             
             .labels-container {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
             }
             
             .label-container {
                 border: 2px solid #000;
                 margin: 2mm;
-                width: 85mm;
-                height: 25mm;
+                width: 60mm;
+                height: 20mm;
                 page-break-inside: avoid;
                 position: relative;
             }
@@ -172,23 +172,23 @@
                 color-adjust: exact;
                 background: #000 !important;
                 color: white !important;
-                font-size: 9px;
-                padding: 3px 6px;
+                font-size: 7px;
+                padding: 2px 4px;
             }
             
             .label-body {
-                padding: 4px 6px;
+                padding: 2px 4px;
                 height: auto !important;
-                min-height: 15mm;
-                font-size: 8px;
+                min-height: 12mm;
+                font-size: 6px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
             }
             
             .book-code {
-                font-size: 14px;
-                margin-bottom: 2px;
+                font-size: 10px;
+                margin-bottom: 1px;
                 font-weight: bold;
                 text-align: center;
                 border-bottom: 1px solid #000;
@@ -196,21 +196,21 @@
             }
             
             .book-title {
-                font-size: 9px;
+                font-size: 7px;
                 margin-bottom: 1px;
                 font-weight: bold;
                 text-align: center;
-                line-height: 1.1;
+                line-height: 1.0;
             }
             
             .book-author {
-                font-size: 8px;
+                font-size: 6px;
                 margin-bottom: 1px;
                 text-align: center;
             }
             
             .book-info {
-                font-size: 7px;
+                font-size: 5px;
                 text-align: center;
                 border-top: 1px solid #000;
                 padding-top: 1px;
