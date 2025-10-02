@@ -14,13 +14,7 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\PengunjungController;
 use App\Http\Controllers\AdminController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
 
-// --- Rute Autentikasi ---
 Route::get('/', fn() => redirect('/login'));
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -28,7 +22,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
-// --- Grup Rute yang Membutuhkan Autentikasi Admin ---
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -80,10 +73,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('rak/{rak}/edit', [RakController::class, 'edit'])->name('rak.edit');
     Route::put('rak/{rak}', [RakController::class, 'update'])->name('rak.update');
     Route::delete('rak/{rak}', [RakController::class, 'destroy'])->name('rak.destroy');
-    
-    // ======================================================================
-    // RUTE BARU UNTUK PEMINJAMAN, PENGEMBALIAN, DAN DENDA
-    // ======================================================================
 
     // --- Transaksi Peminjaman ---
     Route::get('peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
@@ -98,9 +87,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // --- Transaksi Pengembalian ---
     Route::get('pengembalian', [PengembalianController::class, 'index'])->name('pengembalian.index');
-    // Rute untuk menampilkan form pengembalian berdasarkan ID peminjaman
     Route::get('pengembalian/{id}/create', [PengembalianController::class, 'create'])->name('pengembalian.create');
-    // Rute untuk memproses data dari form pengembalian
     Route::post('pengembalian/{id}', [PengembalianController::class, 'store'])->name('pengembalian.store');
     Route::get('pengembalian/{id}', [PengembalianController::class, 'show'])->name('pengembalian.show');
     Route::get('pengembalian/{id}/edit', [PengembalianController::class, 'edit'])->name('pengembalian.edit');
@@ -109,9 +96,7 @@ Route::middleware(['auth:admin'])->group(function () {
     
     // --- Transaksi Denda ---
     Route::get('denda', [DendaController::class, 'index'])->name('denda.index');
-    // Rute untuk menampilkan form pembayaran denda
     Route::get('denda/{id}/bayar', [DendaController::class, 'bayar'])->name('denda.bayar');
-    // Rute untuk memproses pembayaran denda
     Route::post('denda/{id}/bayar', [DendaController::class, 'prosesBayar'])->name('denda.proses-bayar');
 
     // --- Laporan ---
@@ -135,7 +120,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::put('pengunjung/{pengunjung}', [PengunjungController::class, 'update'])->name('pengunjung.update');
     Route::delete('pengunjung/{pengunjung}', [PengunjungController::class, 'destroy'])->name('pengunjung.destroy');
 
-    // --- Manajemen Admin (Hanya untuk Super Admin) ---
+    // --- Manajemen Admin ---
     Route::get('admin/manage', [AdminController::class, 'index'])->name('admin.index');
     Route::get('admin/manage/create', [AdminController::class, 'create'])->name('admin.create');
     Route::post('admin/manage', [AdminController::class, 'store'])->name('admin.store');
