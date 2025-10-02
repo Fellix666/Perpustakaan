@@ -139,7 +139,7 @@ Catatan: Jika perubahan tidak muncul, coba `php artisan config:clear` dan `php a
 
 ---
 
-## 6. Screenshots (Opsional)
+## 6. Screenshots
 
 ## 6. Screenshots
 
@@ -170,7 +170,7 @@ Catatan: Jika perubahan tidak muncul, coba `php artisan config:clear` dan `php a
 
 ---
 
-## 7. Struktur Folder (Opsional)
+## 7. Struktur Folder
 
 ```
 Perpustakaan/
